@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="example.css"/>
+    <meta charset="UTF-8">
+    <title>Enriched Highstock Demo</title>
+    <link rel="stylesheet" href="../bower_components/angular-bootstrap/ui-bootstrap-csp.css"/>
+    <link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.css"/>
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.css"/>
+    <!--<link rel="stylesheet" href="../src/DecoratedStockChart.css"/>-->
+    <link rel="stylesheet" href="../dist/decorated-stock-chart.css"/>
+</head>
+<body ng-app="Example" style="position: relative;">
+<div class="container" ng-controller="MainCtrl">
+    <div id="alert">
+        <alert type="success" close="closeAlert()">{{message}}</alert>
+    </div>
+    <h1>Demo</h1>
+    <hr/>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <decorated-stock-chart
+                    securities="securities"
+                    available-security-attributes="availableSecurityAttributes"
+                    default-security-attribute="defaultSecurityAttribute"
+                    on-attribute-select="onAttributeSelect(attr, security, options)"
+                    on-security-remove="onSecurityRemove(id)"
+
+                    show-more-market-info="true"
+                    more-market-info-callback="moreMarketInfoCallback()"
+
+                    custom-buttons="customButtons"
+
+                    highstock-options="highstockOptions"
+                    title="Example Chart of Stock Prices"
+
+                    api-handle="apiHandle"
+
+                    market-index-typeahead="marketIndexTypeahead(userInput)"
+                    on-market-index-select="onMarketIndexSelect(attr, options)"
+
+                    custom-benchmark-options="customBenchmarkOptions"
+                    on-custom-benchmark-select="onCustomBenchmarkSelect(customBenchmark, options)"
+
+                    start-date="2014-01-01"
+                    end-date="2015-09-01">
+            </decorated-stock-chart>
+        </div>
+    </div>
+    <h3>Externally Control Securities</h3>
+    <hr/>
+    <div class="container">
+        <span ng-repeat="security in securities">
+            <button class="btn btn-success" ng-click="addSecurity(security)"><i class="fa fa-plus"></i>
+                {{security.label}}
+            </button>&nbsp;
+        </span>`
+        <span ng-repeat="security in securities">
+            <button class="btn btn-danger" ng-click="apiHandle.api.removeSecurity(security.id)"><i
+                    class="fa fa-minus"></i>
+                {{security.label}}
+            </button>
+            &nbsp;
+        </span>
+    </div>
+</div>
+<br/><br/><br/><br/>
+<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+<script src="../bower_components/underscore/underscore.js"></script>
+<script src="../bower_components/moment/moment.js"></script>
+<script src="../bower_components/angular/angular.js"></script>
+<script src="../bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+<script src="../bower_components/typeahead-focus/typeahead-focus.js"></script>
+<script src="../bower_components/highstock-release/highstock-all.js"></script>
+<script src="../bower_components/Custom-Events/customEvents.js"></script>
+<!-- Component src JS -->
+<script src="../src/Export.js"></script>
+<script src="../src/GeneralUtils.js"></script>
+<script src="../src/MenuBuilderUtils.js"></script>
+<script src="../src/DecoratedStockChart.js"></script>
+<!--<script src="../dist/decorated-stock-chart.js"></script>-->
+<!-- example -->
+<script src="MainCtrl.js"></script>
+</body>
+</html>

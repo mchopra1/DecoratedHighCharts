@@ -1,0 +1,6 @@
+#alert {
+  position: absolute;
+  left: 30%;
+  display: none;
+  width: 40%;
+}
