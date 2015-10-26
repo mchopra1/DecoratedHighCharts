@@ -1,10 +1,10 @@
 /**
- * this module exposes the 'dsc' object which contains utility and helper functions for the main angular directive
+ * this module exposes the 'dhc' object which contains utility and helper functions for the main angular directive
  */
 (function () {
     const root = this; // this == window
-    const dsc = root.dsc || {};
-    root.dsc = dsc;
+    const dhc = root.dhc || {};
+    root.dhc = dhc;
 
     /**
      * choose the correct yAxis to add a new series into
@@ -12,7 +12,7 @@
      * @param chart
      * @param seriesOption
      */
-    root.dsc.resolvePreferredYAxis = function (chart, seriesOption) {
+    root.dhc.resolvePreferredYAxis = function (chart, seriesOption) {
         if (!seriesOption.axisType)
             return chart.yAxis.length === 0 ? -1 : 0;
         return _.findIndex(chart.yAxis, function (axis) {
@@ -31,14 +31,14 @@
      * @param axisType a member of the axisType enum
      * @return {string}
      */
-    root.dsc.addAxisToChart = function (chart, name, scope, axisType) {
+    root.dhc.addAxisToChart = function (chart, name, scope, axisType) {
         const axisId = _.uniqueId("yAxis");
         chart.addAxis({
             title: {
                 text: name,
                 events: {
                     click: function (event) {
-                        dsc.onAxisClick.call(this, event, scope);
+                        dhc.onAxisClick.call(this, event, scope);
                     }
                 }
             },
@@ -54,14 +54,14 @@
      * @param series
      * @param scope
      */
-    root.dsc.attachLegendEventHandlers = function (series, scope) {
+    root.dhc.attachLegendEventHandlers = function (series, scope) {
         $(series.legendItem.element)
             .css({"user-select": "none"})
             .mousedown(function (event) {
                 if (event.button == 2) {
                     event.preventDefault();
                     event.stopPropagation();
-                    return dsc.triggerSeriesContextMenu(event, {
+                    return dhc.triggerSeriesContextMenu(event, {
                         series: series,
                         scope: scope
                     });
@@ -74,7 +74,7 @@
      * @param event
      * @param scope
      */
-    root.dsc.onAxisClick = function (event, scope) {
+    root.dhc.onAxisClick = function (event, scope) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -107,7 +107,7 @@
                 }
             });
             const $menuItem = $("<li><span></span></li>")
-                .click(dsc.inertClickHandler);
+                .click(dhc.inertClickHandler);
             $menuItem.children("span").append($input);
             //$menuItem.css({"min-width": $input.val().length + "em"});
             return $menuItem;
@@ -117,7 +117,7 @@
             .append(editAxisTitle())
             .append(removeAxis());
 
-        dsc.showCtxMenu($ctxMenu, event);
+        dhc.showCtxMenu($ctxMenu, event);
         // focus on the edit axis title input
         $ctxMenu.find("input.form-control").select();
     };
@@ -128,7 +128,7 @@
      * @param $ctxMenu
      * @param event
      */
-    root.dsc.showCtxMenu = function ($ctxMenu, event) {
+    root.dhc.showCtxMenu = function ($ctxMenu, event) {
         $ctxMenu.show();
         const $rootDiv = $('div.root');
 
@@ -156,7 +156,7 @@
      * a click event handler that does nothing and prevents propagation
      * @param e
      */
-    root.dsc.inertClickHandler = function (e) {
+    root.dhc.inertClickHandler = function (e) {
         e.preventDefault();
         e.stopPropagation();
     };
@@ -167,7 +167,7 @@
      * @param targetAxis
      * @param scope
      */
-    root.dsc.moveAxis = function (series, targetAxis, scope) {
+    root.dhc.moveAxis = function (series, targetAxis, scope) {
         const origAxis = series.yAxis;
         const seriesOptions = series.options;
         // figure out the position
@@ -177,7 +177,7 @@
         seriesOptions.color = series.color;
         series.remove();
         scope.addSeries(seriesOptions);
-        if (dsc.isAxisEmpty(origAxis))
+        if (dhc.isAxisEmpty(origAxis))
             origAxis.remove();
 
     };
@@ -188,18 +188,18 @@
      * @param attr
      * @returns {string}
      */
-    root.dsc.generateSeriesID = function (security, attr) {
+    root.dhc.generateSeriesID = function (security, attr) {
         return ["Security", security.id, attr.tag].join(".");
     };
 
     /**
      * this is the event handler for the user clicking on the chart title
      */
-    root.dsc.onTitleClick = function (clickEvent, scope, chart) {
+    root.dhc.onTitleClick = function (clickEvent, scope, chart) {
 
         const $input = $("<input class='form-control' style='position:relative; left: 5%; width: 90%;'/>");
         const $menuItem = $("<li><span></span></li>");
-        $menuItem.on('click', dsc.inertClickHandler).children("span").append($input);
+        $menuItem.on('click', dhc.inertClickHandler).children("span").append($input);
 
         const $ctxMenu = scope.$ctxMenu;
         $ctxMenu.find(".dropdown-menu li").remove();
@@ -220,18 +220,18 @@
         const titleLength = Math.min($input.val().length, 20);
         $menuItem.css({"min-width": titleLength + "em"});
 
-        dsc.showCtxMenu($ctxMenu, clickEvent);
+        dhc.showCtxMenu($ctxMenu, clickEvent);
         $input.select();
     };
     /**
      * test if the given series is the only one left on the given yAxis
      * @param yAxis
      */
-    root.dsc.isAxisEmpty = function (yAxis) {
+    root.dhc.isAxisEmpty = function (yAxis) {
         return yAxis && yAxis.series.length === 0;
     };
 
-    root.dsc.afterSeriesRemove = function (yAxis, securityId, scope) {
+    root.dhc.afterSeriesRemove = function (yAxis, securityId, scope) {
 
         function hasNoSeries(securityId) {
             const chart = scope.states.chart;
@@ -242,14 +242,14 @@
         }
 
         // figure out if this is the last series on its given axis, if so remove the axis
-        if (dsc.isAxisEmpty(yAxis))
+        if (dhc.isAxisEmpty(yAxis))
             yAxis.remove();
         // figure out if this is the last series for the given security, if so remove the security
         if (securityId && hasNoSeries(securityId))
             scope.apiHandle.api.removeSecurity(securityId);
     };
 
-    root.dsc.removeSeriesById = function (id, scope) {
+    root.dhc.removeSeriesById = function (id, scope) {
 
         const chart = scope.states.chart;
         const series = chart.get(id);
@@ -259,7 +259,7 @@
         if (angular.isFunction(series.remove))
             series.remove();
 
-        dsc.afterSeriesRemove(yAxis, securityId, scope);
+        dhc.afterSeriesRemove(yAxis, securityId, scope);
     };
 
 
@@ -268,7 +268,7 @@
      * @param period MA of this period will be taken by the resulting function
      * @returns {Function}
      */
-    root.dsc.SMAFactory = function (period) {
+    root.dhc.SMAFactory = function (period) {
         var nums = [];
         return function (num) {
             nums.push(num);

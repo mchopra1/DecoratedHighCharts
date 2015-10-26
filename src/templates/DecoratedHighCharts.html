@@ -1,0 +1,111 @@
+<div class="root" style="position: relative">
+    <div class="control flex-main-container"
+         ng-init="showSecurityControl = false; showIndicatorControl = false; showBenchmarkControl = false;">
+        <span class="flex-sub-container-left">
+            <span ng-if="chartProperties.type === 'Scattered Plot'">
+                <span class="restrict-dropdown-menu">
+                    <label>X:</label>
+                    <input type="text" ng-model="chartProperties.x_attribute" class="form-control"
+                           style="width: 12em; display: inline; height:25px;"
+                           typeahead="column as column.text for column in numericalColumns | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
+                           typeahead-focus
+                           typeahead-on-select="apiHandle.api.loadChart()"
+                           typeahead-select-on-blur="true"/>
+                </span>
+                <span class="restrict-dropdown-menu">
+                    <label>Y:</label>
+                    <input type="text" ng-model="chartProperties.y_attribute" class="form-control"
+                           style="width: 12em; display: inline; height:25px;"
+                           typeahead="column as column.text for column in numericalColumns | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
+                           typeahead-focus
+                           typeahead-on-select="apiHandle.api.loadChart()"
+                           typeahead-select-on-blur="true"/>
+                </span>
+            </span>
+        </span>
+        <span class="flex-sub-container-right">
+            <span dhc-click-outside dhc-open-state="states.menuDisplays.indicatorControl"
+                              dhc-close-callback="toggleSlide(!states.menuDisplays.indicatorControl,'indicator-control')">
+                <a class="clickable" style="text-decoration:none"
+                   ng-click="toggleSlide(!states.menuDisplays.moreOptions,'more-options');selected='';">
+                    <span class="fake-anchor-tag">More Options</span>
+                    <i class="fa" ng-class="{'fa-chevron-up': states.menuDisplays.moreOptions, 'fa-chevron-down': !states.menuDisplays.moreOptions}"></i>
+                </a>
+                <div class="more-options floating-form" style="display: none;width:250px;">
+                    <label>Group By:&nbsp;</label>
+                    <div class="restrict-dropdown-menu input-group">
+                        <input type="text" class="form-control"
+                               ng-model="chartProperties.group_by"
+                               typeahead="column as column.text for column in categoricalColumns | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
+                               typeahead-on-select="apiHandle.api.loadChart()"
+                               typeahead-focus/>
+                        <span class="input-group-addon" ng-click="chartProperties.group_by = undefined;apiHandle.api.loadChart()">
+                            <strong>X</strong>
+                        </span>
+                    </div>
+                    <label>Point Radius:&nbsp;</label>
+                    <div class="restrict-dropdown-menu input-group">
+                        <input type="text" class="form-control"
+                               ng-model="chartProperties.radius"
+                               typeahead="column as column.text for column in numericalColumns | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
+                               typeahead-on-select="apiHandle.api.loadChart()"
+                               typeahead-focus/>
+                        <span class="input-group-addon" ng-click="chartProperties.radius = undefined;apiHandle.api.loadChart()">
+                            <strong>X</strong>
+                        </span>
+                    </div>
+                    <div>
+                        <label>Regression:&nbsp;</label>
+                        <br/>
+                        <div class="btn-group" dropdown>
+                            <button id="split-button" type="button" class="btn btn-default">{{getRegressionText()}}</button>
+                            <button type="button" class="btn btn-default" dropdown-toggle>
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="split-button">
+                                <li role="menuitem" ng-repeat="type in chartFactory.regressionTypes"
+                                                    ng-click="chartProperties.regression = type.tag;apiHandle.api.loadChart()">
+                                    <a href="#">{{type.text}}</a>
+                                </li>
+                                <li role="menuitem" ng-click="chartProperties.regression = undefined;apiHandle.api.loadChart()">
+                                    <a href="#">None</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <br/>
+                    <div>
+                        <div class="btn-group">
+                            <label class="btn btn-primary" ng-model="chartProperties.show_datalabel" btn-checkbox
+                                   ng-click="apiHandle.api.timeoutLoadChart()">
+                                {{chartProperties.show_datalabel ? "Data labels on" : "Data labels off"}}
+                            </label>
+                        </div>
+                        <div class="btn-group" style="padding-top:10px;">
+                            <label class="btn btn-primary" ng-model="chartProperties.outlier_remove" btn-checkbox
+                                   ng-click="apiHandle.api.timeoutLoadChart()">
+                                {{chartProperties.outlier_remove ? "Outliers removed" : "Outliers not removed"}}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </span>
+            <span>
+                <span class="clickable" style="padding-right:5px;color:#005da0;" ng-click="exportXLS()"><i class="fa fa-share-square-o"></i></span>
+                <span class="clickable" style="padding-right:5px;color:#005da0;" ng-repeat="customButton in customButtons" ng-click="customButton.callback()">
+                    <i class="fa" ng-class="customButton.faClass"></i>
+                </span>
+            </span>
+        </span>
+    </div>
+    <hr/>
+    <div style="position:relative">
+        <i ng-show="isProcessing" class="fa fa-spinner fa-spin fa-3x spinner" style="position:absolute;top:0;left:0"></i>
+        <!-- this is where the stock chart goes -->
+        <div ng-attr-id="{{chartId}}" style="width:100%;height:100%;"></div>
+        <alert ng-show="alerts.generalWarning.active" style="position:absolute;bottom:0;right:0;"
+               close="alerts.generalWarning.active = false" type="danger">
+            {{alerts.generalWarning.message}}
+        </alert>
+    </div>
+</div>
