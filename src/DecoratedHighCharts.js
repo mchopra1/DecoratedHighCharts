@@ -63,8 +63,10 @@
                     };
                     scope.states = {
                         menuDisplays: {
-                            moreOptions: false
-                        }
+                            moreOptions: false,
+                            changeChartType: false
+                        },
+                        needAttrs: false
                     };
 
                     // disable default right-click triggered context menu
@@ -98,6 +100,12 @@
                             "No Regression";
                     };
 
+                    scope.getValidColumns = function(columnSet){
+                        return _.filter(columnSet, function(column){
+                            return column.visualizationTypes.indexOf(scope.chartProperties.type) > -1;
+                        });
+                    };
+
                     /**
                      * turn each series's data into a HTML table
                      * and then export this table to Excel
@@ -112,6 +120,14 @@
 
                     scope.apiHandle.api = {
                         loadChart: function(){
+                            if( _.map(chartFactory.getRequiredProperties(scope.chartProperties), function(prop){
+                                    return scope.chartProperties[prop]
+                                }).indexOf(undefined) > -1 ) {
+                                // TODO do something here to tell user to fill in missing properties
+                                scope.states.needAttrs = true;
+                                return;
+                            }
+                            scope.states.needAttrs = false;
                             var opts = chartFactory.getHighchartOptions(scope.chartProperties, scope.showOnlySelectedRows);
                             opts.chart.renderTo = scope.chartId;
                             scope.states.chart = new Highcharts.Chart(opts);

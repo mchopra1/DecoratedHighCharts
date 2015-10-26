@@ -39,6 +39,12 @@ angular.module('decorated-high-charts').factory('chartFactory', function (boxPlo
             else if( chartProperties.type === "Column Chart" )
                 return ["x_attribute", "y_attribute", "group_by"];
         },
+        getRequiredProperties: function(chartProperties){
+            if( chartProperties.type === "Pie Chart" || chartProperties.type === "Box Plot" )
+                return ["group_by", "analytic"];
+            else if( chartProperties.type === "Scattered Plot" || chartProperties.type === "Column Chart" )
+                return ["x_attribute", "y_attribute"];
+        },
         regressionTypes:  [
             {
                 tag: 'linear',
@@ -830,6 +836,9 @@ function aggregate(dataToAgg, y) {
         "SUM": ss.sum,
         "AVERAGE": ss.average,
         "COUNT": function (x) {
+            return _.uniq(x).length;
+        },
+        "COUNT_AND_DISTINCT": function (x) {
             return _.uniq(x).length;
         }
     };
