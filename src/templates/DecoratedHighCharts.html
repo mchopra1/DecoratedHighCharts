@@ -87,7 +87,7 @@
                                 <strong>X</strong>
                             </span>
                         </div>
-                        <label>Point Radius:&nbsp;</label>
+                        <label>Radius:&nbsp;</label>
                         <div class="restrict-dropdown-menu input-group">
                             <input type="text" class="form-control"
                                    ng-model="chartProperties.radius"
@@ -116,20 +116,21 @@
                                     </li>
                                 </ul>
                             </div>
+                            <div ng-show="chartProperties.regression == 'polynomial'">
+                                <label>Regression Degree:</label>
+                                <input class="form-control" type="number" min="1" ng-model="chartProperties.regression_degree"
+                                       ng-change="apiHandle.api.timeoutLoadChart()"/>
+                            </div>
                         </div>
                         <br/>
                         <div>
-                            <div class="btn-group">
-                                <label class="btn btn-primary" ng-model="chartProperties.show_datalabel" btn-checkbox
-                                       ng-click="apiHandle.api.timeoutLoadChart()">
-                                    {{chartProperties.show_datalabel ? "Data labels on" : "Data labels off"}}
-                                </label>
+                            <div>
+                                <input type="checkbox" ng-model="chartProperties.show_datalabel" ng-click="apiHandle.api.timeoutLoadChart()"/>
+                                Data Labels
                             </div>
-                            <div class="btn-group" style="padding-top:10px;">
-                                <label class="btn btn-primary" ng-model="chartProperties.outlier_remove" btn-checkbox
-                                       ng-click="apiHandle.api.timeoutLoadChart()">
-                                    {{chartProperties.outlier_remove ? "Outliers removed" : "Outliers not removed"}}
-                                </label>
+                            <div style="padding-top:10px;">
+                                <input type="checkbox" ng-model="chartProperties.outlier_remove" ng-click="apiHandle.api.timeoutLoadChart()"/>
+                                Remove Outliers
                             </div>
                         </div>
                     </div>

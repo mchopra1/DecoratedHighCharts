@@ -8,7 +8,6 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
     };
 
     $scope.chartProperties = {
-        filterMore: "all",
         regression: "logarithmic",
         regression_degree: 3,
         type: "Scattered Plot",
