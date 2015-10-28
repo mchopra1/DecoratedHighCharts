@@ -6,6 +6,14 @@
 
 var TURBO_THRESHOLD = 2000;
 
+var highchartDOMElem;
+
+const $flexibleRemoveBtn = $('<i class="fa fa-remove clickable"></i>').css({
+    'position': 'absolute',
+    'z-index': 0.99,
+    'color': 'red'
+});
+
 angular.module('decorated-high-charts').factory('chartDataUniverse', function () {
     return {
         data: [],
@@ -30,6 +38,9 @@ angular.module('decorated-high-charts').factory('chartFactory', function (boxPlo
         "Column Chart": columnChartProvider
     };
     return {
+        getSpecificChartService: function(chartType){
+            return chartFactoryMap[chartType];
+        },
         getHighchartOptions: function (chartProperties) {
             return chartFactoryMap[chartProperties.type].produceChartOption(chartProperties, chartProperties.dataToShow !== "all");
         },
@@ -196,7 +207,8 @@ angular.module('decorated-high-charts').factory('boxPlotProvider', function (cha
     }
 });
 
-angular.module('decorated-high-charts').factory('scatteredChartProvider', function (chartDataUniverse, dhcStatisticalService, commonHighchartConfig, dhcSeriesColorService, $rootScope) {
+angular.module('decorated-high-charts').factory('scatteredChartProvider', function (chartDataUniverse, dhcStatisticalService,
+                                                            commonHighchartConfig, dhcSeriesColorService, $rootScope, $timeout) {
     var cfgTemplate = _.extend(_.clone(commonHighchartConfig), {
         chart: {
             type: 'scatter',
@@ -223,13 +235,14 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
      * @returns {Array}
      */
     function generateSeries(categories, radius, groupedData, xAttr, yAttr, stdevForOutlierRemoval, propertiesHash) {
+        var obj = this;
         var series = [];
         _.each(categories, function (category) {
             var data = [];
             // pick out x, y or Radius
             if (radius != null) {
                 _.each(groupedData[category], function (item) {
-                    if (item[xAttr.colTag] != null && item[yAttr.colTag])
+                    if (item[xAttr.colTag] != null && item[yAttr.colTag] && obj.excludedPoints.indexOf(item.cusip) == -1)
                         data.push({
                             id: item[chartDataUniverse.key],
                             name: item[chartDataUniverse.key],
@@ -240,7 +253,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 });
             } else {
                 _.each(groupedData[category], function (item) {
-                    if (item[xAttr.colTag] != null && item[yAttr.colTag])
+                    if (item[xAttr.colTag] != null && item[yAttr.colTag] && obj.excludedPoints.indexOf(item.cusip) == -1)
                         data.push({
                             id: item[chartDataUniverse.key],
                             name: item[chartDataUniverse.key],
@@ -379,6 +392,11 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
     }
 
     return {
+        excludedPoints: [],
+        resetExcludedPoints: function(){
+            this.excludedPoints = [];
+            $rootScope.chartScope.apiHandle.api.timeoutLoadChart();
+        },
         addRegression: function (series, type, extraArgs, id) {
             if (type)
                 return regressionJSWrapper(series, type, extraArgs, id);
@@ -430,6 +448,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
             }
         },
         produceChartOption: function (chartProperties, onlyOnSelectedRows) {
+            var obj = this;
             dhcSeriesColorService.removePalate("chart" + chartProperties.$$hashKey);
             var xAttr = chartProperties.x_attribute,
                 yAttr = chartProperties.y_attribute,
@@ -447,7 +466,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
 
                 var categories = _.keys(groupedData);
 
-                series = generateSeries(categories, radius, groupedData, xAttr, yAttr, chartProperties.outlier_remove, chartProperties.$$hashKey);
+                series = generateSeries.call(this, categories, radius, groupedData, xAttr, yAttr, chartProperties.outlier_remove, chartProperties.$$hashKey);
                 // get correct regression color
                 if (chartProperties.regression === "linear")
                     addFittedLine(series, chartProperties.$$hashKey);
@@ -487,6 +506,32 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                                 if( chartDataUniverse.scatterPlotPointClickCallback({point: this}) ){
                                     $rootScope.chartScope.apiHandle.api.togglePoint(this.id);
                                 }
+                            },
+                            mouseOver: function(){
+                                const point = this;
+
+                                $flexibleRemoveBtn.detach();
+                                $flexibleRemoveBtn.off('click');
+                                $flexibleRemoveBtn.on('click', function () {
+                                    $timeout(function(){
+                                        if (point.id && obj.excludedPoints.indexOf(point.id) == -1) {
+                                            obj.excludedPoints.push(point.id);
+                                            //if (!scope.resetButton.active)
+                                            //    scope.resetButton.active = true;
+                                            const series = point.series;
+                                            point.remove();
+                                            obj.redrawRegression(series, chartProperties);
+                                        }
+                                        $flexibleRemoveBtn.detach();
+                                    });
+                                });
+
+                                $flexibleRemoveBtn.css({
+                                    'top': (this.series.chart.yAxis[0].toPixels(this.y) - 15) + 'px',
+                                    'left': (this.series.chart.xAxis[0].toPixels(this.x)) + 'px'
+                                });
+
+                                $flexibleRemoveBtn.appendTo($(highchartDOMElem));
                             }
                         }
                     }
@@ -707,12 +752,11 @@ angular.module('decorated-high-charts').factory('columnChartProvider', function 
             cfg.xAxis.categories = xValues;
             cfg.xAxis.title = cfg.xAxis.title ? cfg.xAxis.title : {};
             cfg.xAxis.title.text = chartProperties.x_attribute.text;
-            cfg.yAxis.title.text = y.unit;
+            cfg.yAxis.title.text = chartProperties.y_attribute.text;
             cfg.title.text = y.text + " by " + x.text;
             // Only have legend if there is more than non-regression series
-            //cfg.legend.enabled = _.reject(series, function(ser){
-            //        return ser.type === "spline";
-            //    }).length > 1;
+            cfg.legend = cfg.legend || {};
+            cfg.legend.enabled = series.length > 1;
             return cfg;
         }
     }

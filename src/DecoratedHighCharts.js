@@ -54,9 +54,9 @@
                                 {colTag: $scope.chartProperties[property].colTag}) :
                             undefined;
                     });
+                    $scope.chartId = _.uniqueId('decorated-highchart-');
                 },
                 link: function (scope, elem, attrs) {
-                    scope.chartId = _.uniqueId('decorated-highchart-');
                     scope.chartFactory = chartFactory;
                     scope.alerts = {
                         generalWarning: {active: false, message: ""}
@@ -172,6 +172,11 @@
                      */
                     $timeout(function () {
                         scope.apiHandle.api.loadChart();
+                        // Initialize dom element variable
+                        highchartDOMElem = $($('#' + scope.chartId).get()[0]);
+                        $(highchartDOMElem).hover(null, function () {
+                            $flexibleRemoveBtn.detach();
+                        });
                     });
 
                     // This is to remove any unexpected propagation from dropdowns
