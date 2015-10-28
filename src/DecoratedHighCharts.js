@@ -1,5 +1,3 @@
-(function () {
-
     if (typeof String.prototype.endsWith !== 'function') {
         String.prototype.endsWith = function (suffix) {
             return this.indexOf(suffix, this.length - suffix.length) !== -1;
@@ -19,7 +17,7 @@
     const scriptFolder = src.substr(0, src.lastIndexOf("/") + 1);
     angular.module("decorated-high-charts", ['ui.bootstrap', 'typeahead-focus']);
     angular.module("decorated-high-charts")
-        .directive("decoratedHighCharts", function (chartDataUniverse, chartFactory, $timeout) {
+        .directive("decoratedHighCharts", function (chartDataUniverse, chartFactory, $timeout, $rootScope) {
             return {
                 restrict: "E",
                 scope: {
@@ -46,6 +44,8 @@
                     highchartOptions: "=?"
                 },
                 controller: function($scope, $element){
+                    $scope.chartProperties.dataToShow = $scope.chartProperties.dataToShow ? $scope.chartProperties.dataToShow : "all";
+                    $rootScope.chartScope = $scope;
                     chartDataUniverse.setupUniverse($scope);
                     // Map colTags to actual objects as the dropdowns map by reference not by value
                     _.each(chartFactory.getRelevantProperties($scope.chartProperties), function(property){
@@ -78,7 +78,7 @@
                      * create a reusable context menu to be displayed
                      * at the user's discretion
                      */
-                    //scope.$ctxMenu = dhc.buildContextMenuContainer(elem);
+                    scope.$ctxMenu = dhc.buildContextMenuContainer(elem);
 
                     scope.toggleSlide = function (show, className) {
                         const camelCaseName = attrs.$normalize(className);
@@ -102,7 +102,7 @@
 
                     scope.getValidColumns = function(columnSet){
                         return _.filter(columnSet, function(column){
-                            return column.visualizationTypes.indexOf(scope.chartProperties.type) > -1;
+                            return getVisualizationTypes(column).indexOf(scope.chartProperties.type.toUpperCase()) > -1;
                         });
                     };
 
@@ -118,6 +118,13 @@
                             window.open('data:application/vnd.ms-excel,' + encodeURIComponent(html));
                     };
 
+                    scope.exportPDF = function(){
+                        scope.states.chart.exportChart({
+                            type: 'application/pdf',
+                            filename: 'chart-export ' + scope.states.chart.title.textStr
+                        });
+                    };
+
                     scope.apiHandle.api = {
                         loadChart: function(){
                             if( _.map(chartFactory.getRequiredProperties(scope.chartProperties), function(prop){
@@ -128,7 +135,7 @@
                                 return;
                             }
                             scope.states.needAttrs = false;
-                            var opts = chartFactory.getHighchartOptions(scope.chartProperties, scope.showOnlySelectedRows);
+                            var opts = chartFactory.getHighchartOptions(scope.chartProperties);
                             opts.chart.renderTo = scope.chartId;
                             scope.states.chart = new Highcharts.Chart(opts);
                         },
@@ -136,8 +143,30 @@
                             $timeout(function(){
                                 scope.apiHandle.api.loadChart();
                             });
+                        },
+                        togglePoint: function(cusip){
+                            const point = scope.states.chart.get(cusip);
+                            if( point )
+                                point.select(null, true);
+                        },
+                        getPointStatus: function(cusip){
+                            const point = scope.states.chart.get(cusip);
+                            return point ? point.selected : point;
                         }
                     };
+
+                    /**
+                     * This function returns visualization types which are cased correctly and underscores
+                     * replaced with spaces for legacy reasons
+                     * @param column
+                     * @returns {*}
+                     */
+                    function getVisualizationTypes(column){
+                        return _.map(column.visualizationTypes, function(type){
+                            return type.replace("_"," ").toUpperCase();
+                        });
+                    }
+
                     /**
                      * initialization & initial rendering
                      */
@@ -187,4 +216,3 @@
                 }
             }
         });
-}());

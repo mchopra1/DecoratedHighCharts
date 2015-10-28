@@ -83,7 +83,7 @@
                                    typeahead="column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
                                    typeahead-on-select="apiHandle.api.loadChart()"
                                    typeahead-focus/>
-                            <span class="input-group-addon" ng-click="chartProperties.group_by = undefined;apiHandle.api.loadChart()">
+                            <span class="dhc-clickable input-group-addon" ng-click="chartProperties.group_by = undefined;apiHandle.api.loadChart()">
                                 <strong>X</strong>
                             </span>
                         </div>
@@ -94,7 +94,7 @@
                                    typeahead="column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
                                    typeahead-on-select="apiHandle.api.loadChart()"
                                    typeahead-focus/>
-                            <span class="input-group-addon" ng-click="chartProperties.radius = undefined;apiHandle.api.loadChart()">
+                            <span class="dhc-clickable input-group-addon" ng-click="chartProperties.radius = undefined;apiHandle.api.loadChart()">
                                 <strong>X</strong>
                             </span>
                         </div>
@@ -141,36 +141,47 @@
                                    typeahead="column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
                                    typeahead-on-select="apiHandle.api.loadChart()"
                                    typeahead-focus/>
-                            <span class="input-group-addon" ng-click="chartProperties.group_by = undefined;apiHandle.api.loadChart()">
+                            <span class="dhc-clickable input-group-addon" ng-click="chartProperties.group_by = undefined;apiHandle.api.loadChart()">
                                 <strong>X</strong>
                             </span>
                         </div>
                     </div>
                     <div ng-if="chartProperties.type != 'Column Chart' && chartProperties.type != 'Scattered Plot'">
+                        There are no other options for this type of chart
                     </div>
                 </div>
             </span>
         </span>
         <span class="flex-sub-container-right">
             <span dhc-click-outside dhc-open-state="states.menuDisplays.changeChartType"
-                              dhc-close-callback="toggleSlide(!states.menuDisplays.changeChartType,'more-options')">
+                              dhc-close-callback="toggleSlide(!states.menuDisplays.changeChartType,'change-chart-type')">
                 <a class="clickable" style="text-decoration:none;padding-right:20px;"
                    ng-click="toggleSlide(!states.menuDisplays.changeChartType,'change-chart-type');selected='';">
-                    <span class="fake-anchor-tag">Change chart type</span>
+                    <span class="fake-anchor-tag">Chart type</span>
                     <i class="fa" ng-class="{'fa-chevron-up': states.menuDisplays.changeChartType, 'fa-chevron-down': !states.menuDisplays.changeChartType}"></i>
                 </a>
-                <div class="change-chart-type floating-form" style="display: none;width:450px;">
+                <div class="change-chart-type floating-form" style="display: none;width:450px;right: 0px;">
                     <label>Chart Type:</label>
+                    <br/>
                     <div class="btn-group">
                         <label class="btn btn-primary" ng-model="chartProperties.type" btn-radio="'Pie Chart'" ng-click="apiHandle.api.timeoutLoadChart()">Pie Chart</label>
                         <label class="btn btn-primary" ng-model="chartProperties.type" btn-radio="'Box Plot'" ng-click="apiHandle.api.timeoutLoadChart()">Box Plot</label>
                         <label class="btn btn-primary" ng-model="chartProperties.type" btn-radio="'Column Chart'" ng-click="apiHandle.api.timeoutLoadChart()">Column Chart</label>
                         <label class="btn btn-primary" ng-model="chartProperties.type" btn-radio="'Scattered Plot'" ng-click="apiHandle.api.timeoutLoadChart()">Scattered Plot</label>
                     </div>
+                    <br/>
+                    <br/>
+                    <label>Data to show:</label>
+                    <br/>
+                    <div class="btn-group">
+                        <label class="btn btn-primary" ng-model="chartProperties.dataToShow" btn-radio="'all'" ng-click="apiHandle.api.timeoutLoadChart()">All Data</label>
+                        <label class="btn btn-primary" ng-model="chartProperties.dataToShow" btn-radio="'selected'" ng-click="apiHandle.api.timeoutLoadChart()">Selected Data</label>
+                    </div>
                 </div>
             </span>
             <span>
-                <span class="clickable" style="padding-right:5px;color:#005da0;" ng-click="exportXLS()"><i class="fa fa-share-square-o"></i></span>
+                <span class="clickable" style="padding-right:5px;color:#005da0;" ng-click="exportXLS()"><i class="fa fa-file-excel-o"></i></span>
+                <span class="clickable" style="padding-right:5px;color:#005da0;" ng-click="exportPDF()"><i class="fa fa-file-pdf-o"></i></span>
                 <span class="clickable" style="padding-right:5px;color:#005da0;" ng-repeat="customButton in customButtons" ng-click="customButton.callback()">
                     <i class="fa" ng-class="customButton.faClass"></i>
                 </span>

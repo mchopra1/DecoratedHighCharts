@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="../bower_components/angular-bootstrap/ui-bootstrap-csp.css"/>
     <link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.css"/>
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.css"/>
-    <link rel="stylesheet" href="../src/DecoratedHighCharts.css"/>
-    <!--<link rel="stylesheet" href="../dist/decorated-high-charts.css"/>-->
+    <!--<link rel="stylesheet" href="../src/DecoratedHighCharts.css"/>-->
+    <link rel="stylesheet" href="../dist/decorated-high-charts.css"/>
 </head>
 <body ng-app="Example" style="position: relative;">
 <div class="container" ng-controller="MainCtrl">
@@ -26,7 +26,9 @@
                     data="data"
                     key="cusip"
                     custom-buttons="customButtons"
-                    api-handle="apiHandle">
+                    api-handle="apiHandle"
+                    scatter-plot-point-click-callback="clickCallback(point)"
+                                   get-selected-rows-data="getSelectedRowsData()">
             </decorated-high-charts>
         </div>
     </div>
@@ -46,11 +48,11 @@
 <script src="../bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
 <script src="../bower_components/typeahead-focus/typeahead-focus.js"></script>
 <script src="../bower_components/highstock-release/highstock-all.js"></script>
-<!--<script src="../bower_components/Custom-Events/customEvents.js"></script>-->
+<script src="../bower_components/Custom-Events/customEvents.js"></script>
 <!-- Component src JS -->
-<!--<script src="../src/Export.js"></script>-->
+<script src="../src/Export.js"></script>
 <script src="../src/GeneralUtils.js"></script>
-<!--<script src="../src/MenuBuilderUtils.js"></script>-->
+<script src="../src/MenuBuilderUtils.js"></script>
 <script src="../src/DecoratedHighCharts.js"></script>
 <script src="../src/ChartServices.js"></script>
 <!--<script src="../dist/decorated-high-charts.js"></script>-->

@@ -9,7 +9,9 @@ var TURBO_THRESHOLD = 2000;
 angular.module('decorated-high-charts').factory('chartDataUniverse', function () {
     return {
         data: [],
-        getSelectedRowsData: function(){},
+        getSelectedRowsData: function(){
+            return this.data;
+        },
         scatterPlotPointClickCallback: function(){},
         setupUniverse: function(pScope){
             this.data = pScope.data;
@@ -28,8 +30,8 @@ angular.module('decorated-high-charts').factory('chartFactory', function (boxPlo
         "Column Chart": columnChartProvider
     };
     return {
-        getHighchartOptions: function (chartProperties, onlyOnSelectedRows) {
-            return chartFactoryMap[chartProperties.type].produceChartOption(chartProperties, onlyOnSelectedRows);
+        getHighchartOptions: function (chartProperties) {
+            return chartFactoryMap[chartProperties.type].produceChartOption(chartProperties, chartProperties.dataToShow !== "all");
         },
         getRelevantProperties: function(chartProperties){
             if( chartProperties.type === "Pie Chart" || chartProperties.type === "Box Plot" )
@@ -106,7 +108,7 @@ angular.module('decorated-high-charts').factory('pieChartProvider', function (ch
     return {
         produceChartOption: function (chartProperties, onlyOnSelectedRows) {
             var toGroupBy = chartProperties.group_by.colTag;
-            var groupedAnalytic = _.groupBy(onlyOnSelectedRows ? chartDataUniverse.getSelectedRowsData() : chartDataUniverse.data, toGroupBy);
+            var groupedAnalytic = _.groupBy(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), toGroupBy);
 
             var categories = _.keys(groupedAnalytic);
             var pieSeries = [];
@@ -168,7 +170,7 @@ angular.module('decorated-high-charts').factory('boxPlotProvider', function (cha
         produceChartOption: function (chartProperties, onlyOnSelectedRows) {
             var toGroupBy = chartProperties.group_by.colTag;
             var analytic = chartProperties.analytic.colTag;
-            var groupedAnalytic = _.groupBy(onlyOnSelectedRows ? chartDataUniverse.getSelectedRowsData() : chartDataUniverse.data, toGroupBy);
+            var groupedAnalytic = _.groupBy(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), toGroupBy);
             var categories = _.keys(groupedAnalytic);
             var boxPlotData = [];
             _.each(categories, function (category) {
@@ -180,6 +182,8 @@ angular.module('decorated-high-charts').factory('boxPlotProvider', function (cha
             var boxPlotSeries = {name: chartProperties.analytic.text, data: boxPlotData};
             var cfg = _.clone(cfgTemplate);
             cfg.xAxis.categories = categories;
+            cfg.xAxis.title = cfg.xAxis.title ? cfg.xAxis.title : {};
+            cfg.xAxis.title.text = chartProperties.group_by.text;
             cfg.yAxis.title.text = chartProperties.analytic.text;
             if (categories.length < 15)
                 cfg.series = [boxPlotSeries];
@@ -192,7 +196,7 @@ angular.module('decorated-high-charts').factory('boxPlotProvider', function (cha
     }
 });
 
-angular.module('decorated-high-charts').factory('scatteredChartProvider', function (chartDataUniverse, dhcStatisticalService, commonHighchartConfig, dhcSeriesColorService) {
+angular.module('decorated-high-charts').factory('scatteredChartProvider', function (chartDataUniverse, dhcStatisticalService, commonHighchartConfig, dhcSeriesColorService, $rootScope) {
     var cfgTemplate = _.extend(_.clone(commonHighchartConfig), {
         chart: {
             type: 'scatter',
@@ -201,21 +205,6 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
         },
         legend: {
             enabled: true
-        },
-        title: {
-            text: null
-        },
-        xAxis: {
-            title: {
-                text: null,
-                margin: 0
-            }
-        },
-        yAxis: {
-            title: {
-                text: null,
-                margin: 5
-            }
         },
         series: [],
         credits: {
@@ -446,9 +435,9 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 yAttr = chartProperties.y_attribute,
                 radius = chartProperties.radius,
                 groupByAttr = chartProperties.group_by,
-                series = [], cfg = _.clone(cfgTemplate), data, groupedData = {};
-            if ((onlyOnSelectedRows ? chartDataUniverse.getSelectedRowsData() : chartDataUniverse.data).length <= TURBO_THRESHOLD) {  // && not a special chart
-                var result = processData(onlyOnSelectedRows ? chartDataUniverse.getSelectedRowsData() : chartDataUniverse.data, chartProperties.outlier_remove, xAttr, yAttr);
+                series = [], cfg = _.clone(cfgTemplate), groupedData = {};
+            if ((getValidDataScope(onlyOnSelectedRows, chartDataUniverse)).length <= TURBO_THRESHOLD) {  // && not a special chart
+                var result = processData(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), chartProperties.outlier_remove, xAttr, yAttr);
                 var data = result.data;
 
                 if (groupByAttr != null)
@@ -493,20 +482,12 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 series: {
                     point: {
                         events: {
-                            click: function(){
-                                if( chartDataUniverse.scatterPlotPointClickCallback )
-                                    chartDataUniverse.scatterPlotPointClickCallback();
+                            click: function(e){
+                                e.stopPropagation();
+                                if( chartDataUniverse.scatterPlotPointClickCallback({point: this}) ){
+                                    $rootScope.chartScope.apiHandle.api.togglePoint(this.id);
+                                }
                             }
-                            //    function () {
-                            //    this.select(true, true);
-                            //    chartDataUniverse.activeTabOverride = true;
-                            //    if (chartDataUniverse.selectedRows[this.id])
-                            //        chartDataUniverse.removeSelectedRow(this.id);
-                            //    else
-                            //        chartDataUniverse.addSelectedRow(this.id);
-                            //
-                            //    chartDataUniverse.activeTabOverride = false;
-                            //}
                         }
                     }
                 }
@@ -559,8 +540,8 @@ angular.module('decorated-high-charts').factory('heatMapProvider', function (cha
         produceChartOption: function (chartProperties, onlyOnSelectedRows) {
             var xAttr = chartProperties.x_attribute;
             var yAttr = chartProperties.y_attribute;
-            var xCategories = _.uniq(_.pluck(onlyOnSelectedRows ? chartDataUniverse.getSelectedRowsData() : chartDataUniverse.data, xAttr.colTag));
-            var yCategories = _.uniq(_.pluck(onlyOnSelectedRows ? chartDataUniverse.getSelectedRowsData() : chartDataUniverse.data, yAttr.colTag));
+            var xCategories = _.uniq(_.pluck(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), xAttr.colTag));
+            var yCategories = _.uniq(_.pluck(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), yAttr.colTag));
 
             var data = [];
 
@@ -576,7 +557,7 @@ angular.module('decorated-high-charts').factory('heatMapProvider', function (cha
 
             for (var i = 0; i < xCategories.length; i++) {
                 for (var j = 0; j < yCategories.length; j++) {
-                    var groupData = _.filter(onlyOnSelectedRows ? chartDataUniverse.getSelectedRowsData() : chartDataUniverse.data, function (data) {
+                    var groupData = _.filter(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), function (data) {
                         return data[xAttr.colTag] == xCategories[i] && data[yAttr.colTag] == yCategories[j];
                     });
                     var aggregatedData = aggregate(groupData, chartProperties);
@@ -624,7 +605,14 @@ angular.module('decorated-high-charts').factory('commonHighchartConfig', functio
             }
         },
         title: {
-            text: ""
+            text: "",
+            events: {
+                click: function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dhc.onTitleClick(e, $rootScope.chartScope, this);
+                }
+            }
         },
         plotOptions: {
             series: {turboThreshold: TURBO_THRESHOLD}
@@ -641,18 +629,28 @@ angular.module('decorated-high-charts').factory('commonHighchartConfig', functio
             enabled: false
         },
         xAxis: {
-            tickInterval: 1,
-            minPadding: 0,
-            maxPadding: 0
+            title: {
+                events: {
+                    click: function (event) {
+                        dhc.onAxisClick.call(this, event, $rootScope.chartScope);
+                    }
+                }
+            }
         },
         yAxis: {
-            tickInterval: 1,
-            minPadding: 0,
-            maxPadding: 0
+            title: {
+                events: {
+                    click: function (event) {
+                        dhc.onAxisClick.call(this, event, $rootScope.chartScope);
+                    }
+                }
+            }
         }
     };
     return _.clone(commonCfg);
 });
+
+
 
 angular.module('decorated-high-charts').factory('columnChartProvider', function (chartDataUniverse, commonHighchartConfig) {
     var cfgTemplate = _.extend(_.clone(commonHighchartConfig), {
@@ -666,6 +664,7 @@ angular.module('decorated-high-charts').factory('columnChartProvider', function 
             }
         }
     });
+
     return {
         produceChartOption: function (chartProperties, onlyOnSelectedRows) {
             // TODO correct rough around the edges - i.e. aggregation logic for average and count, labels etc
@@ -673,12 +672,12 @@ angular.module('decorated-high-charts').factory('columnChartProvider', function 
                 y = chartProperties.y_attribute, groupedAnalytic = {};
 
             if (chartProperties.group_by)
-                groupedAnalytic = _.groupBy(onlyOnSelectedRows ? chartDataUniverse.getSelectedRowsData() : chartDataUniverse.data, chartProperties.group_by.colTag);
+                groupedAnalytic = _.groupBy(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), chartProperties.group_by.colTag);
             else
-                groupedAnalytic[x.text] = onlyOnSelectedRows ? chartDataUniverse.getSelectedRowsData() : chartDataUniverse.data;
+                groupedAnalytic[x.text] = getValidDataScope(onlyOnSelectedRows, chartDataUniverse);
 
             var categories = _.keys(groupedAnalytic);
-            var xValues = _.uniq(_.pluck(onlyOnSelectedRows ? chartDataUniverse.getSelectedRowsData() : chartDataUniverse.data, x.colTag));
+            var xValues = _.uniq(_.pluck(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), x.colTag));
             var series = [];
 
             _.each(categories, function (category) {
@@ -706,8 +705,14 @@ angular.module('decorated-high-charts').factory('columnChartProvider', function 
                 return item == null ? "N/A " + chartProperties.x_attribute.text : item;
             });
             cfg.xAxis.categories = xValues;
+            cfg.xAxis.title = cfg.xAxis.title ? cfg.xAxis.title : {};
+            cfg.xAxis.title.text = chartProperties.x_attribute.text;
             cfg.yAxis.title.text = y.unit;
             cfg.title.text = y.text + " by " + x.text;
+            // Only have legend if there is more than non-regression series
+            //cfg.legend.enabled = _.reject(series, function(ser){
+            //        return ser.type === "spline";
+            //    }).length > 1;
             return cfg;
         }
     }
@@ -829,7 +834,9 @@ angular.module('decorated-high-charts').factory('dhcStatisticalService', functio
     }
 });
 
-
+function getValidDataScope(onlyOnSelectedRows, chartDataUniverse){
+    return onlyOnSelectedRows ? chartDataUniverse.getSelectedRowsData() : chartDataUniverse.data;
+}
 
 function aggregate(dataToAgg, y) {
     var aggFnMap = {

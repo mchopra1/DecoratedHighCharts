@@ -1,16 +1,15 @@
 (function () {
     const root = this; // this == window
-    const dsc = root.dsc || {};
-    root.dsc = dsc;
+    const dhc = root.dhc || {};
+    root.dhc = dhc;
     /**
      * takes an array of Highcharts.Series and serialize them into HTML text wrapped in a table
      * @param series
      * @return {string}
      */
-    dsc.seriesToHTML = function (series) {
+    dhc.seriesToHTML = function (series) {
         // construct header row
         const headers = "<tr>" +
-            "<th style='background-color: #0069d6; color: #ffffff;'>Date</th>" +
             _.map(series, function (s) {
                 return "<th style='background-color: #0069d6; color: #ffffff;'>" + s.name + "</th>";
             }).join("") + "</tr>";
@@ -29,7 +28,6 @@
         // turn the lookup map into HTML
         const body = _.map(domain, function (x) {
             return "<tr>" +
-                "<td style='background-color: #999999'>" + moment(x).format("YYYY-MM-DD") + "</td>" +
                 _.map(matrix, function (col) {
                     return "<td>" + (col[x] && col[x] !== undefined && col[x] !== 'undefined' ? col[x] : 0) + "</td>";
                 }).join("")

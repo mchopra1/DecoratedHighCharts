@@ -28,7 +28,7 @@ gulp.task('uglify', ['concat'], function () {
 
 gulp.task('concat', function () {
     return gulp
-        .src(['src/**/*.js'])
+        .src(['src/DecoratedHighCharts.js','src/ChartServices.js','src/Export.js','src/GeneralUtils.js','src/MenuBuilderUtils.js','src/Templates.js'])
         .pipe(concat(pkg.name + ".js"))
         .pipe(gulp.dest('dist/'));
 });

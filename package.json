@@ -1,5 +1,5 @@
 {
-  "name": "DecoratedHighCharts",
+  "name": "decorated-high-charts",
   "version": "0.0.0",
   "description": "Fancy HighCharts container",
   "main": "gulpfile.js",

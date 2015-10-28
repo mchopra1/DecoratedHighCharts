@@ -142,3 +142,7 @@
 .dhc-opaque{
     opacity: 0.25;
 }
+
+.dhc-clickable{
+    cursor: pointer;
+}

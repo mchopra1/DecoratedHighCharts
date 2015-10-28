@@ -138,3 +138,11 @@
     max-height : 200px;
     overflow-y: auto;
 }
+
+.dhc-opaque{
+    opacity: 0.25;
+}
+
+.dhc-clickable{
+    cursor: pointer;
+}

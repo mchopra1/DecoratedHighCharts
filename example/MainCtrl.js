@@ -27,37 +27,37 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
         "text": "OAS",
         "aggregationMethod": "AVERAGE",
         "visualizationTypes": [
-            "Box Plot",
-            "Scattered Plot",
-            "Column Chart"
+            "BOX_PLOT",
+            "SCATTERED_PLOT",
+            "COLUMN_CHART"
         ]
     },{
         colTag: "wal_to_worst",
         text: "WAL",
         "aggregationMethod": "AVERAGE",
         "visualizationTypes": [
-            "Box Plot",
-            "Scattered Plot",
-            "Column Chart"
+            "BOX_PLOT",
+            "SCATTERED_PLOT",
+            "COLUMN_CHART"
         ]
     },{
         colTag: "ytw",
         text: "YTW",
         "aggregationMethod": "AVERAGE",
         "visualizationTypes": [
-            "Box Plot",
-            "Scattered Plot",
-            "Column Chart"
+            "BOX_PLOT",
+            "SCATTERED_PLOT",
+            "COLUMN_CHART"
         ]
     },{
         "colTag": "amt_issued",
         "text": "Amt Issued",
         "aggregationMethod": "SUM",
         "visualizationTypes": [
-            "Pie Chart",
-            "Box Plot",
-            "Scattered Plot",
-            "Column Chart"
+            "PIE_CHART",
+            "BOX_PLOT",
+            "SCATTERED_PLOT",
+            "COLUMN_CHART"
         ]
     }];
 
@@ -65,19 +65,19 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
         colTag: "issuer_sname",
         text: "Issuer Name",
         "visualizationTypes": [
-            "Box Plot",
-            "Scattered Plot",
-            "Pie Chart",
-            "Column Chart"
+            "BOX_PLOT",
+            "SCATTERED_PLOT",
+            "PIE_CHART",
+            "COLUMN_CHART"
         ]
     },{
         colTag: "barclay_sector4",
         text: "Barclays Sub-Industry",
         "visualizationTypes": [
-            "Box Plot",
-            "Scattered Plot",
-            "Pie Chart",
-            "Column Chart"
+            "BOX_PLOT",
+            "SCATTERED_PLOT",
+            "PIE_CHART",
+            "COLUMN_CHART"
         ]
     }];
 
@@ -87,6 +87,17 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
         },
         faClass: "fa-remove"
     }];
+
+    $scope.clickCallback = function(point){
+        console.log(point);
+        return true;
+    };
+
+    $scope.getSelectedRowsData = function(){
+        return _.filter($scope.data, function(datum){
+            return ["00206RCD2","B0A01QJZ2"].indexOf(datum.cusip) > -1;
+        });
+    };
 
     $scope.apiHandle = {};
 

@@ -1,7 +1,7 @@
 (function () {
     const root = this; // this == window
-    const dsc = root.dsc || {};
-    root.dsc = dsc;
+    const dhc = root.dhc || {};
+    root.dhc = dhc;
 
     /**
      * create the reusable context menu
@@ -12,7 +12,7 @@
      * @param elem the parent element to attach the generated context menu
      * @returns {*|jQuery}
      */
-    root.dsc.buildContextMenuContainer = function (elem) {
+    root.dhc.buildContextMenuContainer = function (elem) {
         const $ctxMenu = $(
             "<div style='z-index: 10; position: fixed;'>" +
             "<ul class='clickable dropdown-menu multi-level' style='display: block;'></ul>" +
@@ -35,13 +35,13 @@
      * @param args additional args, containing the series and the scope
      * @returns {boolean}
      */
-    root.dsc.triggerSeriesContextMenu = function (event, args) {
+    root.dhc.triggerSeriesContextMenu = function (event, args) {
         const $ctxMenu = args.scope.$ctxMenu;
         $ctxMenu.find(".dropdown-menu li").remove();
-        _.each(dsc.buildMenuItems(args), function (menuItem) {
+        _.each(dhc.buildMenuItems(args), function (menuItem) {
             $ctxMenu.children(".dropdown-menu").append(menuItem);
         });
-        dsc.showCtxMenu($ctxMenu, event);
+        dhc.showCtxMenu($ctxMenu, event);
         return false;
     };
 
@@ -50,7 +50,7 @@
      * @param args
      * @returns {*[]}
      */
-    root.dsc.buildMenuItems = function (args) {
+    root.dhc.buildMenuItems = function (args) {
         const scope = args.scope;
         const seriesTransformer = scope.seriesTransformer;
         const series = args.series;
@@ -72,7 +72,7 @@
                     $input.focus();
                 })
                 .append($("<li class='dropdown-menu'><span></span></li>")
-                    .click(dsc.inertClickHandler)
+                    .click(dhc.inertClickHandler)
                     .append($input.on('keydown', function (keyEvent) {
                         if (keyEvent.keyCode == 13) {
                             if (isNaN(parseInt($input.val())) || $input.val() == '')
@@ -89,7 +89,7 @@
 
         const basis = function () {
             return $("<li class='dropdown-submenu'><a>Show Basis vs. </a></li>")
-                .append(dsc.buildSeriesSubMenu({
+                .append(dhc.buildSeriesSubMenu({
                     scope: scope,
                     onClick: function (event, otherSeries) {
                         const transformedSeries = seriesTransformer.toBasis(series, otherSeries);
@@ -111,7 +111,7 @@
                             series.update({type: type[1]});
                             // for some chart update wipes out legend event handler
                             // so we reattach them here
-                            dsc.attachLegendEventHandlers(series, scope);
+                            dhc.attachLegendEventHandlers(series, scope);
                         }).appendTo($subMenu);
                 });
             return $("<li class='dropdown-submenu'><a>Change Chart Type</a></li>").append($subMenu);
@@ -126,7 +126,7 @@
         };
         const changeAxis = function () {
             return $("<li class='dropdown-submenu'><a>Change Axis</a></li>")
-                .append(dsc.buildAxesSubMenu(series, chart, scope));
+                .append(dhc.buildAxesSubMenu(series, chart, scope));
         };
         return disableTransformation ? [changeAxis(), basis(), changeType(), removeSeries()]
             : [changeAxis(), addMA(), basis(), changeType(), removeSeries()];
@@ -142,7 +142,7 @@
      *
      * @param args
      */
-    root.dsc.buildSeriesSubMenu = function (args) {
+    root.dhc.buildSeriesSubMenu = function (args) {
         const chart = args.scope.states.chart;
         const callback = args.onClick;
         const currentSeries = args.currentSeries;
@@ -171,7 +171,7 @@
      * @param chart
      * @param scope
      */
-    root.dsc.buildAxesSubMenu = function (series, chart, scope) {
+    root.dhc.buildAxesSubMenu = function (series, chart, scope) {
         const $dropdown = $("<ul class='dropdown-menu'></ul>");
         _.each(chart.yAxis, function (axis) {
             var $menuItem;
@@ -180,13 +180,13 @@
             else
                 $menuItem = $("<li><a>Y-Axis: " + axis.options.title.text + "</a></li>")
                     .click(function () {
-                        dsc.moveAxis(series, axis, scope);
+                        dhc.moveAxis(series, axis, scope);
                     });
             $dropdown.append($menuItem);
         });
         $dropdown.append($("<li><a><i class=\"fa fa-plus\"></i> Move To New Axis</a></li>").click(function () {
-            const axis = dsc.addAxisToChart(chart, series.name, scope, series.userOptions.axisType);
-            dsc.moveAxis(series, axis, scope);
+            const axis = dhc.addAxisToChart(chart, series.name, scope, series.userOptions.axisType);
+            dhc.moveAxis(series, axis, scope);
         }));
         return $dropdown;
     };
