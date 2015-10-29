@@ -87,6 +87,10 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
         faClass: "fa-remove"
     }];
 
+    $scope.chartRendering = function(){
+        console.log("props updated");
+    };
+
     $scope.clickCallback = function(point){
         console.log(point);
         return true;
