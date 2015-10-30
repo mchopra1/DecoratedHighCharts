@@ -49,7 +49,11 @@
                     /**
                      * Optional callback which is triggered right before the chart is rendered or updated
                      */
-                    chartRendering: "&?",
+                    beforeRender: "&?",
+                    /**
+                     * Optional callback which is triggered right after the chart is rendered or updated
+                     */
+                    afterRender: "&?",
                     /**
                      * An object so outside resources can communicate with the chart if they wish
                      */
@@ -170,11 +174,12 @@
                                 scope.states.needAttrs = true;
                                 return;
                             }
-                            scope.chartRendering();
+                            scope.beforeRender();
                             scope.states.needAttrs = false;
                             var opts = chartFactory.getHighchartOptions(scope, this.excludedPoints);
                             opts.chart.renderTo = scope.chartId;
                             scope.states.chart = new Highcharts.Chart(opts);
+                            scope.afterRender();
                         },
                         timeoutLoadChart: function(){
                             $timeout(function(){
@@ -760,6 +765,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                                             const series = point.series;
                                             point.remove();
                                             obj.redrawRegression(series, chartProperties);
+                                            chartScope.afterRender();
                                         }
                                         chartScope.$flexibleRemoveBtn.detach();
                                     });

@@ -492,6 +492,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                                             const series = point.series;
                                             point.remove();
                                             obj.redrawRegression(series, chartProperties);
+                                            chartScope.afterRender();
                                         }
                                         chartScope.$flexibleRemoveBtn.detach();
                                     });
