@@ -197,8 +197,8 @@
             <alert ng-show="states.needAttrs" close="states.needAttrs = false" type="warning" style="font-size: 12px;position: absolute;z-index:999">
                 Please enter required attributes
             </alert>
-            <div class="dhc-chart-toolbar" ng-show="chartFactory.getSpecificChartService('Scattered Plot').excludedPoints.length > 0">
-                <a class="clickable" ng-click="chartFactory.getSpecificChartService('Scattered Plot').resetExcludedPoints()">
+            <div class="dhc-chart-toolbar" ng-show="apiHandle.api.excludedPoints.length > 0">
+                <a class="clickable" ng-click="apiHandle.api.resetExcludedPoints()">
                     Reset Points <i class="fa fa-refresh"></i>
                 </a>
             </div>

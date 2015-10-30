@@ -17,7 +17,7 @@
     const scriptFolder = src.substr(0, src.lastIndexOf("/") + 1);
     angular.module("decorated-high-charts", ['ui.bootstrap', 'typeahead-focus']);
     angular.module("decorated-high-charts")
-        .directive("decoratedHighCharts", function (chartDataUniverse, chartFactory, $timeout, $rootScope) {
+        .directive("decoratedHighCharts", function (chartFactory, $timeout) {
             return {
                 restrict: "E",
                 scope: {
@@ -77,8 +77,6 @@
                 },
                 controller: function($scope, $element){
                     $scope.chartProperties.dataToShow = $scope.chartProperties.dataToShow ? $scope.chartProperties.dataToShow : "all";
-                    $rootScope.chartScope = $scope;
-                    chartDataUniverse.setupUniverse($scope);
                     // Map colTags to actual objects as the dropdowns map by reference not by value
                     _.each(chartFactory.getRelevantProperties($scope.chartProperties), function(property){
                         $scope.chartProperties[property] = $scope.chartProperties[property] ?
@@ -158,6 +156,7 @@
                     };
 
                     scope.apiHandle.api = {
+                        excludedPoints: [],
                         loadChart: function(){
                             // Tell user to fill in missing properties
                             if( _.map(chartFactory.getRequiredProperties(scope.chartProperties), function(prop){
@@ -168,7 +167,7 @@
                             }
                             scope.chartRendering();
                             scope.states.needAttrs = false;
-                            var opts = chartFactory.getHighchartOptions(scope.chartProperties);
+                            var opts = chartFactory.getHighchartOptions(scope, this.excludedPoints);
                             opts.chart.renderTo = scope.chartId;
                             scope.states.chart = new Highcharts.Chart(opts);
                         },
@@ -177,17 +176,21 @@
                                 scope.apiHandle.api.loadChart();
                             });
                         },
-                        togglePoint: function(cusip){
-                            const point = scope.states.chart.get(cusip);
+                        togglePoint: function(key){
+                            const point = scope.states.chart.get(key);
                             if( point )
                                 point.select(null, true);
                         },
-                        getPointStatus: function(cusip){
-                            const point = scope.states.chart.get(cusip);
+                        getPointStatus: function(key){
+                            const point = scope.states.chart.get(key);
                             return point ? point.selected : point;
                         },
                         getRelevantProperties: function(){
                             return chartFactory.getRelevantProperties(scope.chartProperties);
+                        },
+                        resetExcludedPoints: function(){
+                            this.excludedPoints = [];
+                            this.timeoutLoadChart();
                         }
                     };
 

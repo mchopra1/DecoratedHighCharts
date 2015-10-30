@@ -17,7 +17,7 @@
     const scriptFolder = src.substr(0, src.lastIndexOf("/") + 1);
     angular.module("decorated-high-charts", ['ui.bootstrap', 'typeahead-focus']);
     angular.module("decorated-high-charts")
-        .directive("decoratedHighCharts", function (chartDataUniverse, chartFactory, $timeout, $rootScope) {
+        .directive("decoratedHighCharts", function (chartFactory, $timeout) {
             return {
                 restrict: "E",
                 scope: {
@@ -77,8 +77,6 @@
                 },
                 controller: function($scope, $element){
                     $scope.chartProperties.dataToShow = $scope.chartProperties.dataToShow ? $scope.chartProperties.dataToShow : "all";
-                    $rootScope.chartScope = $scope;
-                    chartDataUniverse.setupUniverse($scope);
                     // Map colTags to actual objects as the dropdowns map by reference not by value
                     _.each(chartFactory.getRelevantProperties($scope.chartProperties), function(property){
                         $scope.chartProperties[property] = $scope.chartProperties[property] ?
@@ -158,6 +156,7 @@
                     };
 
                     scope.apiHandle.api = {
+                        excludedPoints: [],
                         loadChart: function(){
                             // Tell user to fill in missing properties
                             if( _.map(chartFactory.getRequiredProperties(scope.chartProperties), function(prop){
@@ -168,7 +167,7 @@
                             }
                             scope.chartRendering();
                             scope.states.needAttrs = false;
-                            var opts = chartFactory.getHighchartOptions(scope.chartProperties);
+                            var opts = chartFactory.getHighchartOptions(scope, this.excludedPoints);
                             opts.chart.renderTo = scope.chartId;
                             scope.states.chart = new Highcharts.Chart(opts);
                         },
@@ -177,17 +176,21 @@
                                 scope.apiHandle.api.loadChart();
                             });
                         },
-                        togglePoint: function(cusip){
-                            const point = scope.states.chart.get(cusip);
+                        togglePoint: function(key){
+                            const point = scope.states.chart.get(key);
                             if( point )
                                 point.select(null, true);
                         },
-                        getPointStatus: function(cusip){
-                            const point = scope.states.chart.get(cusip);
+                        getPointStatus: function(key){
+                            const point = scope.states.chart.get(key);
                             return point ? point.selected : point;
                         },
                         getRelevantProperties: function(){
                             return chartFactory.getRelevantProperties(scope.chartProperties);
+                        },
+                        resetExcludedPoints: function(){
+                            this.excludedPoints = [];
+                            this.timeoutLoadChart();
                         }
                     };
 
@@ -274,23 +277,23 @@ const $flexibleRemoveBtn = $('<i class="fa fa-remove clickable"></i>').css({
     'color': 'red'
 });
 
-angular.module('decorated-high-charts').factory('chartDataUniverse', function () {
-    return {
-        data: [],
-        getSelectedRowsData: function(){
-            return this.data;
-        },
-        scatterPlotPointClickCallback: function(){},
-        setupUniverse: function(pScope){
-            this.data = pScope.data;
-            this.getSelectedRowsData = pScope.getSelectedRowsData || this.getSelectedRowsData;
-            this.scatterPlotPointClickCallback = pScope.scatterPlotPointClickCallback || this.scatterPlotPointClickCallback;
-            this.key = pScope.key;
-        }
-    }
-});
+//angular.module('decorated-high-charts').factory('chartDataUniverse', function () {
+//    return {
+//        data: [],
+//        getSelectedRowsData: function(){
+//            return this.data;
+//        },
+//        scatterPlotPointClickCallback: function(){},
+//        setupUniverse: function(pScope){
+//            this.data = pScope.data;
+//            this.getSelectedRowsData = pScope.getSelectedRowsData || this.getSelectedRowsData;
+//            this.scatterPlotPointClickCallback = pScope.scatterPlotPointClickCallback || this.scatterPlotPointClickCallback;
+//            this.key = pScope.key;
+//        }
+//    }
+//});
 
-angular.module('decorated-high-charts').factory('chartFactory', function (boxPlotProvider, scatteredChartProvider, pieChartProvider, heatMapProvider, columnChartProvider) {
+angular.module('decorated-high-charts').factory('chartFactory', function (boxPlotProvider, scatteredChartProvider, pieChartProvider, columnChartProvider) {
     var chartFactoryMap = {
         "Box Plot": boxPlotProvider,
         "Scattered Plot": scatteredChartProvider,
@@ -301,8 +304,9 @@ angular.module('decorated-high-charts').factory('chartFactory', function (boxPlo
         getSpecificChartService: function(chartType){
             return chartFactoryMap[chartType];
         },
-        getHighchartOptions: function (chartProperties) {
-            return chartFactoryMap[chartProperties.type].produceChartOption(chartProperties, chartProperties.dataToShow !== "all");
+        getHighchartOptions: function (chartScope, excludedPoints) {
+            return chartFactoryMap[chartScope.chartProperties.type].produceChartOption(chartScope.chartProperties, chartScope,
+                                                                chartScope.chartProperties.dataToShow !== "all", excludedPoints);
         },
         getRelevantProperties: function(chartProperties){
             if( chartProperties.type === "Pie Chart" || chartProperties.type === "Box Plot" )
@@ -339,47 +343,47 @@ angular.module('decorated-high-charts').factory('chartFactory', function (boxPlo
     }
 });
 
-angular.module('decorated-high-charts').factory('pieChartProvider', function (chartDataUniverse, commonHighchartConfig) {
-    var cfgTemplate = _.extend(_.clone(commonHighchartConfig),
-        {
-            chart: {
-                type: "pie",
-                marginTop: 40
-            },
-            plotOptions: {
-                pie: {
-                    dataLabels: {
-                        formatter: function () {
-                            return this.point.name == "null" ? "N/A" : this.point.name;
-                        }
-                    }
-                }
-            },
-            tooltip: {
-                formatter: function () {
-                    return ("<b>" + this.series.name + "</b>: " + this.point.name + "<br/>" +
-                    "<b>Percent of Pie</b>: " + numeral(this.percentage).format('0,0.00') + "%<br/>" +
-                    "<b>Total for Slice</b>: " + numeral(this.y / 1000).format('0,0') + "<br/>" +
-                    "<b>Total for Pie</b>: " + numeral(this.total / 1000).format('0,0'));
-                },
-                pie: {
-                    allowPointSelect: true,
-                    cursor: 'pointer',
-                    dataLabels: {
-                        enabled: true,
-                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-                        style: {
-                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-                        }
-                    }
-                }
-            }
-        }
-    );
+angular.module('decorated-high-charts').factory('pieChartProvider', function (commonHighchartConfig) {
     return {
-        produceChartOption: function (chartProperties, onlyOnSelectedRows) {
+        produceChartOption: function (chartProperties, chartScope, onlyOnSelectedRows) {
+            var cfgTemplate = _.extend(_.clone(commonHighchartConfig(chartScope)),
+                {
+                    chart: {
+                        type: "pie",
+                        marginTop: 40
+                    },
+                    plotOptions: {
+                        pie: {
+                            dataLabels: {
+                                formatter: function () {
+                                    return this.point.name == "null" ? "N/A" : this.point.name;
+                                }
+                            }
+                        }
+                    },
+                    tooltip: {
+                        formatter: function () {
+                            return ("<b>" + this.series.name + "</b>: " + this.point.name + "<br/>" +
+                            "<b>Percent of Pie</b>: " + numeral(this.percentage).format('0,0.00') + "%<br/>" +
+                            "<b>Total for Slice</b>: " + numeral(this.y / 1000).format('0,0') + "<br/>" +
+                            "<b>Total for Pie</b>: " + numeral(this.total / 1000).format('0,0'));
+                        },
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                                style: {
+                                    color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                                }
+                            }
+                        }
+                    }
+                }
+            );
             var toGroupBy = chartProperties.group_by.colTag;
-            var groupedAnalytic = _.groupBy(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), toGroupBy);
+            var groupedAnalytic = _.groupBy(getValidDataScope(onlyOnSelectedRows, chartScope), toGroupBy);
 
             var categories = _.keys(groupedAnalytic);
             var pieSeries = [];
@@ -404,44 +408,44 @@ angular.module('decorated-high-charts').factory('pieChartProvider', function (ch
     };
 });
 
-angular.module('decorated-high-charts').factory('boxPlotProvider', function (chartDataUniverse, commonHighchartConfig) {
-    var cfgTemplate = _.extend(_.clone(commonHighchartConfig), {
-        chart: {
-            type: 'boxplot',
-            marginTop: 40
-        },
-        title: {
-            text: null
-        },
-        tooltip: {
-            valueDecimals: 2
-        },
-        legend: {
-            enabled: false
-        },
-        plotOptions: {},
-        xAxis: {
-            labels: {
-                formatter: function () {
-                    return this.value == "null" ? "N/A" : this.value;
-                }
-            }
-        },
-        yAxis: {
-            title: {
-                text: null
-            }
-        },
-        series: null,
-        credits: {
-            enabled: false
-        }
-    });
+angular.module('decorated-high-charts').factory('boxPlotProvider', function (commonHighchartConfig) {
     return {
-        produceChartOption: function (chartProperties, onlyOnSelectedRows) {
+        produceChartOption: function (chartProperties, chartScope, onlyOnSelectedRows) {
+            var cfgTemplate = _.extend(_.clone(commonHighchartConfig(chartScope)), {
+                chart: {
+                    type: 'boxplot',
+                    marginTop: 40
+                },
+                title: {
+                    text: null
+                },
+                tooltip: {
+                    valueDecimals: 2
+                },
+                legend: {
+                    enabled: false
+                },
+                plotOptions: {},
+                xAxis: {
+                    labels: {
+                        formatter: function () {
+                            return this.value == "null" ? "N/A" : this.value;
+                        }
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: null
+                    }
+                },
+                series: null,
+                credits: {
+                    enabled: false
+                }
+            });
             var toGroupBy = chartProperties.group_by.colTag;
             var analytic = chartProperties.analytic.colTag;
-            var groupedAnalytic = _.groupBy(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), toGroupBy);
+            var groupedAnalytic = _.groupBy(getValidDataScope(onlyOnSelectedRows, chartScope), toGroupBy);
             var categories = _.keys(groupedAnalytic);
             var boxPlotData = [];
             _.each(categories, function (category) {
@@ -467,22 +471,8 @@ angular.module('decorated-high-charts').factory('boxPlotProvider', function (cha
     }
 });
 
-angular.module('decorated-high-charts').factory('scatteredChartProvider', function (chartDataUniverse, dhcStatisticalService,
-                                                            commonHighchartConfig, dhcSeriesColorService, $rootScope, $timeout) {
-    var cfgTemplate = _.extend(_.clone(commonHighchartConfig), {
-        chart: {
-            type: 'scatter',
-            zoomType: 'xy',
-            marginTop: 40
-        },
-        legend: {
-            enabled: true
-        },
-        series: [],
-        credits: {
-            enabled: false
-        }
-    });
+angular.module('decorated-high-charts').factory('scatteredChartProvider', function (dhcStatisticalService,
+                                                            commonHighchartConfig, dhcSeriesColorService, $timeout) {
 
     /**
      * Transforms data from disparate data structures into a Highchart Series ready for plotting
@@ -494,18 +484,17 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
      * @param stdevForOutlierRemoval the number of stdev beyond which outliers should be excluded (could be null to not remove anything)
      * @returns {Array}
      */
-    function generateSeries(categories, radius, groupedData, xAttr, yAttr, stdevForOutlierRemoval, propertiesHash) {
-        var obj = this;
+    function generateSeries(categories, radius, groupedData, xAttr, yAttr, stdevForOutlierRemoval, excludedPoints, chartScope, propertiesHash) {
         var series = [];
         _.each(categories, function (category) {
             var data = [];
             // pick out x, y or Radius
             if (radius != null) {
                 _.each(groupedData[category], function (item) {
-                    if (item[xAttr.colTag] != null && item[yAttr.colTag] && obj.excludedPoints.indexOf(item.cusip) == -1)
+                    if (item[xAttr.colTag] != null && item[yAttr.colTag] && excludedPoints.indexOf(item[chartScope.key]) == -1)
                         data.push({
-                            id: item[chartDataUniverse.key],
-                            name: item[chartDataUniverse.key],
+                            id: item[key],
+                            name: item[key],
                             x: item[xAttr.colTag],
                             y: item[yAttr.colTag],
                             z: item[radius.colTag]
@@ -513,10 +502,10 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 });
             } else {
                 _.each(groupedData[category], function (item) {
-                    if (item[xAttr.colTag] != null && item[yAttr.colTag] && obj.excludedPoints.indexOf(item.cusip) == -1)
+                    if (item[xAttr.colTag] != null && item[yAttr.colTag] && excludedPoints.indexOf(item[chartScope.key]) == -1)
                         data.push({
-                            id: item[chartDataUniverse.key],
-                            name: item[chartDataUniverse.key],
+                            id: item[chartScope.key],
+                            name: item[chartScope.key],
                             x: item[xAttr.colTag],
                             y: item[yAttr.colTag]
                         });
@@ -526,7 +515,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 return a.x - b.x;
             });
 
-            var result = processData(chartDataUniverse.data, stdevForOutlierRemoval, xAttr, yAttr);
+            var result = processData(chartScope.data, stdevForOutlierRemoval, xAttr, yAttr);
 
             var serObj = {
                 name: category == "null" ? "Not Found" : category,
@@ -614,7 +603,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 enableMouseTracking: false,
                 color: color,
                 data: regressionOutput.predictedValue
-            })
+            });
             index++;
         });
         return series;
@@ -652,11 +641,6 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
     }
 
     return {
-        excludedPoints: [],
-        resetExcludedPoints: function(){
-            this.excludedPoints = [];
-            $rootScope.chartScope.apiHandle.api.timeoutLoadChart();
-        },
         addRegression: function (series, type, extraArgs, id) {
             if (type)
                 return regressionJSWrapper(series, type, extraArgs, id);
@@ -707,7 +691,21 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 }
             }
         },
-        produceChartOption: function (chartProperties, onlyOnSelectedRows) {
+        produceChartOption: function (chartProperties, chartScope, onlyOnSelectedRows, excludedPoints) {
+            var cfgTemplate = _.extend(_.clone(commonHighchartConfig(chartScope)), {
+                chart: {
+                    type: 'scatter',
+                    zoomType: 'xy',
+                    marginTop: 40
+                },
+                legend: {
+                    enabled: true
+                },
+                series: [],
+                credits: {
+                    enabled: false
+                }
+            });
             var obj = this;
             dhcSeriesColorService.removePalate("chart" + chartProperties.$$hashKey);
             var xAttr = chartProperties.x_attribute,
@@ -715,8 +713,8 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 radius = chartProperties.radius,
                 groupByAttr = chartProperties.group_by,
                 series = [], cfg = _.clone(cfgTemplate), groupedData = {};
-            if ((getValidDataScope(onlyOnSelectedRows, chartDataUniverse)).length <= TURBO_THRESHOLD) {  // && not a special chart
-                var result = processData(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), chartProperties.outlier_remove, xAttr, yAttr);
+            if ((getValidDataScope(onlyOnSelectedRows, chartScope)).length <= TURBO_THRESHOLD) {  // && not a special chart
+                var result = processData(getValidDataScope(onlyOnSelectedRows, chartScope), chartProperties.outlier_remove, xAttr, yAttr);
                 var data = result.data;
 
                 if (groupByAttr != null)
@@ -726,7 +724,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
 
                 var categories = _.keys(groupedData);
 
-                series = generateSeries.call(this, categories, radius, groupedData, xAttr, yAttr, chartProperties.outlier_remove, chartProperties.$$hashKey);
+                series = generateSeries.call(this, categories, radius, groupedData, xAttr, yAttr, chartProperties.outlier_remove, excludedPoints, chartScope, chartProperties.$$hashKey);
                 // get correct regression color
                 if (chartProperties.regression === "linear")
                     addFittedLine(series, chartProperties.$$hashKey);
@@ -763,8 +761,8 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                         events: {
                             click: function(e){
                                 e.stopPropagation();
-                                if( chartDataUniverse.scatterPlotPointClickCallback({point: this}) ){
-                                    $rootScope.chartScope.apiHandle.api.togglePoint(this.id);
+                                if( chartScope.scatterPlotPointClickCallback({point: this}) ){
+                                    chartScope.apiHandle.api.togglePoint(this.id);
                                 }
                             },
                             mouseOver: function(){
@@ -774,8 +772,8 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                                 $flexibleRemoveBtn.off('click');
                                 $flexibleRemoveBtn.on('click', function () {
                                     $timeout(function(){
-                                        if (point.id && obj.excludedPoints.indexOf(point.id) == -1) {
-                                            obj.excludedPoints.push(point.id);
+                                        if (point.id && excludedPoints.indexOf(point.id) == -1) {
+                                            excludedPoints.push(point.id);
                                             //if (!scope.resetButton.active)
                                             //    scope.resetButton.active = true;
                                             const series = point.series;
@@ -819,170 +817,104 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
     }
 });
 
-angular.module('decorated-high-charts').factory('heatMapProvider', function (chartDataUniverse, commonHighchartConfig) {
-    var cfgTemplate = _.extend(_.clone(commonHighchartConfig), {
-        chart: {type: 'heatmap', marginTop: 40, marginBottom: 40},
-        colorAxis: {min: 0, minColor: Highcharts.getOptions().colors[3], maxColor: Highcharts.getOptions().colors[0]},
-        yAxis: {title: {text: null}, showEmpty: false},
-        xAxis: {title: {text: null}, showEmpty: false},
-        legend: {
-            align: 'right',
-            layout: 'vertical',
-            margin: 0,
-            verticalAlign: 'top',
-            y: 25,
-            symbolHeight: 320
-        },
-
-        tooltip: {
-            formatter: function () {
-                return '<b>' + this.series.xAxis.categories[this.point.x] + '</b> sold <br><b>' +
-                    this.point.value + '</b> items on <br><b>' + this.series.yAxis.categories[this.point.y] + '</b>';
-            }
-        }
-    });
-    return {
-        produceChartOption: function (chartProperties, onlyOnSelectedRows) {
-            var xAttr = chartProperties.x_attribute;
-            var yAttr = chartProperties.y_attribute;
-            var xCategories = _.uniq(_.pluck(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), xAttr.colTag));
-            var yCategories = _.uniq(_.pluck(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), yAttr.colTag));
-
-            var data = [];
-
-            function aggregate(groupData, chartProperties) {
-                // TODO be able to avg, count
-                var dataArray = _.pluck(groupData, chartProperties.analytic.colTag);
-                var sum = 0;
-                for (var i = 0; i < dataArray.length; i++) {
-                    sum += dataArray[i];
-                }
-                return sum;
-            }
-
-            for (var i = 0; i < xCategories.length; i++) {
-                for (var j = 0; j < yCategories.length; j++) {
-                    var groupData = _.filter(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), function (data) {
-                        return data[xAttr.colTag] == xCategories[i] && data[yAttr.colTag] == yCategories[j];
-                    });
-                    var aggregatedData = aggregate(groupData, chartProperties);
-                    data.push([i, j, aggregatedData]);
-                }
-            }
-            var series = {
-                name: "Test",
-                data: data,
-                borderWidth: 1,
-                dataLabels: {
-                    enabled: true,
-                    color: 'black',
-                    style: {
-                        textShadow: 'none',
-                        HcTextStroke: null
-                    }
-                }
-            };
-            var cfg = _.clone(cfgTemplate);
-            cfg.series = [series];
-            cfg.xAxis.categories = xCategories;
-            cfg.yAxis.categories = yCategories;
-            return cfg;
-        }
-    }
-});
-
-angular.module('decorated-high-charts').factory('commonHighchartConfig', function ($rootScope) {
+angular.module('decorated-high-charts').factory('commonHighchartConfig', function () {
     $.extend(Highcharts.Renderer.prototype.symbols, {
         X: function (a, b, c, d) {
             return ["M", a, b, "L", a + c, b + d, "M", a + c, b, "L", a, b + d]
         }
     });
-    var commonCfg = {
-        chart: {
-            animation: false,
-            marginTop: -12,
-            events: {
-                load: function () {
-                    for (var i = 0; i < this.exportSVGElements.length; i++) {
-                        this.exportSVGElements[i].toFront();
+    function getCommonCfg(chartScope) {
+        return {
+            chart: {
+                animation: false,
+                marginTop: -12,
+                events: {
+                    load: function () {
+                        for (var i = 0; i < this.exportSVGElements.length; i++) {
+                            this.exportSVGElements[i].toFront();
+                        }
                     }
                 }
-            }
-        },
-        title: {
-            text: "",
-            events: {
-                click: function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dhc.onTitleClick(e, $rootScope.chartScope, this);
-                }
-            }
-        },
-        plotOptions: {
-            series: {turboThreshold: TURBO_THRESHOLD}
-        },
-        exporting: {
-            enabled: false
-        },
-        tooltip: {
-            valueDecimals: 2,
-            useHTML: true,
-            delayForDisplay: 1000
-        },
-        credits: {
-            enabled: false
-        },
-        xAxis: {
+            },
             title: {
+                text: "",
                 events: {
-                    click: function (event) {
-                        dhc.onAxisClick.call(this, event, $rootScope.chartScope);
+                    click: function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dhc.onTitleClick(e, chartScope, this);
                     }
                 }
-            }
-        },
-        yAxis: {
-            title: {
-                events: {
-                    click: function (event) {
-                        dhc.onAxisClick.call(this, event, $rootScope.chartScope);
+            },
+            plotOptions: {
+                series: {turboThreshold: TURBO_THRESHOLD}
+            },
+            exporting: {
+                enabled: false
+            },
+            tooltip: {
+                valueDecimals: 2,
+                useHTML: true,
+                delayForDisplay: 1000
+            },
+            credits: {
+                enabled: false
+            },
+            xAxis: {
+                title: {
+                    events: {
+                        click: function (event) {
+                            dhc.onAxisClick.call(this, event, chartScope);
+                        }
+                    }
+                }
+            },
+            yAxis: {
+                title: {
+                    events: {
+                        click: function (event) {
+                            dhc.onAxisClick.call(this, event, chartScope);
+                        }
                     }
                 }
             }
         }
     };
-    return _.clone(commonCfg);
+    return function(chartScope) {
+        return _.clone(getCommonCfg(chartScope));
+    };
 });
 
 
 
-angular.module('decorated-high-charts').factory('columnChartProvider', function (chartDataUniverse, commonHighchartConfig) {
-    var cfgTemplate = _.extend(_.clone(commonHighchartConfig), {
-        chart: {type: 'column'},
-        xAxis: {title: {text: null}, showEmpty: false},
-        yAxis: {title: {text: null}, showEmpty: false},
-        plotOptions: {
-            column: {
-                pointPadding: 0.2,
-                borderWidth: 0
-            }
-        }
-    });
+angular.module('decorated-high-charts').factory('columnChartProvider', function (commonHighchartConfig) {
 
     return {
-        produceChartOption: function (chartProperties, onlyOnSelectedRows) {
+        produceChartOption: function (chartProperties, chartScope, onlyOnSelectedRows) {
+
+            var cfgTemplate = _.extend(_.clone(commonHighchartConfig(chartScope)), {
+                chart: {type: 'column'},
+                xAxis: {title: {text: null}, showEmpty: false},
+                yAxis: {title: {text: null}, showEmpty: false},
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.2,
+                        borderWidth: 0
+                    }
+                }
+            });
+
             // TODO correct rough around the edges - i.e. aggregation logic for average and count, labels etc
             var x = chartProperties.x_attribute,
                 y = chartProperties.y_attribute, groupedAnalytic = {};
 
             if (chartProperties.group_by)
-                groupedAnalytic = _.groupBy(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), chartProperties.group_by.colTag);
+                groupedAnalytic = _.groupBy(getValidDataScope(onlyOnSelectedRows, chartScope), chartProperties.group_by.colTag);
             else
-                groupedAnalytic[x.text] = getValidDataScope(onlyOnSelectedRows, chartDataUniverse);
+                groupedAnalytic[x.text] = getValidDataScope(onlyOnSelectedRows, chartScope);
 
             var categories = _.keys(groupedAnalytic);
-            var xValues = _.uniq(_.pluck(getValidDataScope(onlyOnSelectedRows, chartDataUniverse), x.colTag));
+            var xValues = _.uniq(_.pluck(getValidDataScope(onlyOnSelectedRows, chartScope), x.colTag));
             var series = [];
 
             _.each(categories, function (category) {
@@ -1682,4 +1614,4 @@ function aggregate(dataToAgg, y) {
     };
 
 }());
-angular.module("decorated-high-charts").run(["$templateCache", function($templateCache) {$templateCache.put("DecoratedHighCharts.html","<div class=\"root\" style=\"position: relative\">\r\n    <div class=\"control flex-main-container\">\r\n        <span class=\"flex-sub-container-left\">\r\n            <span ng-if=\"chartProperties.type == \'Scattered Plot\'\">\r\n                <div class=\"restrict-dropdown-menu\">\r\n                    <label>X:</label>\r\n                    <input type=\"text\" ng-model=\"chartProperties.x_attribute\" class=\"form-control\"\r\n                           style=\"width: 12em; display: inline; height:25px;\"\r\n                           placeholder=\"Enter attribute\"\r\n                           typeahead=\"column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                           typeahead-focus\r\n                           typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                           typeahead-select-on-blur=\"true\"/>\r\n                </div>\r\n                <div class=\"restrict-dropdown-menu\">\r\n                    <label>Y:</label>\r\n                    <input type=\"text\" ng-model=\"chartProperties.y_attribute\" class=\"form-control\"\r\n                           style=\"width: 12em; display: inline; height:25px;\"\r\n                           placeholder=\"Enter attribute\"\r\n                           typeahead=\"column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                           typeahead-focus\r\n                           typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                           typeahead-select-on-blur=\"true\"/>\r\n                </div>\r\n            </span>\r\n            <span ng-if=\"chartProperties.type == \'Column Chart\'\">\r\n                <div class=\"restrict-dropdown-menu\">\r\n                    <label>X:</label>\r\n                    <input type=\"text\" ng-model=\"chartProperties.x_attribute\" class=\"form-control\"\r\n                           style=\"width: 12em; display: inline; height:25px;\"\r\n                           placeholder=\"Enter attribute\"\r\n                           typeahead=\"column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                           typeahead-focus\r\n                           typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                           typeahead-select-on-blur=\"true\"/>\r\n                </div>\r\n                <div class=\"restrict-dropdown-menu\">\r\n                    <label>Y:</label>\r\n                    <input type=\"text\" ng-model=\"chartProperties.y_attribute\" class=\"form-control\"\r\n                           style=\"width: 12em; display: inline; height:25px;\"\r\n                           placeholder=\"Enter attribute\"\r\n                           typeahead=\"column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                           typeahead-focus\r\n                           typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                           typeahead-select-on-blur=\"true\"/>\r\n                </div>\r\n            </span>\r\n            <span ng-if=\"chartProperties.type == \'Pie Chart\' || chartProperties.type == \'Box Plot\'\">\r\n                <div class=\"restrict-dropdown-menu\">\r\n                    <label>Summarize:</label>\r\n                    <input type=\"text\" ng-model=\"chartProperties.analytic\" class=\"form-control\"\r\n                           style=\"width: 12em; display: inline; height:25px;\"\r\n                           placeholder=\"Enter attribute\"\r\n                           typeahead=\"column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                           typeahead-focus\r\n                           typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                           typeahead-select-on-blur=\"true\"/>\r\n                </div>\r\n                <div class=\"restrict-dropdown-menu\">\r\n                    <label>Group By:&nbsp;&nbsp;</label>\r\n                    <input type=\"text\" ng-model=\"chartProperties.group_by\" class=\"form-control\"\r\n                           style=\"width: 12em; display: inline; height:25px;\"\r\n                           placeholder=\"Enter attribute\"\r\n                           typeahead=\"column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                           typeahead-focus\r\n                           typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                           typeahead-select-on-blur=\"true\"/>\r\n                </div>\r\n            </span>\r\n            <span dhc-click-outside dhc-open-state=\"states.menuDisplays.moreOptions\"\r\n                              dhc-close-callback=\"toggleSlide(!states.menuDisplays.moreOptions,\'more-options\')\">\r\n                <a class=\"clickable\" style=\"text-decoration:none;padding-left:20px;\"\r\n                   ng-click=\"toggleSlide(!states.menuDisplays.moreOptions,\'more-options\');selected=\'\';\">\r\n                    <span class=\"fake-anchor-tag\">More Options</span>\r\n                    <i class=\"fa\" ng-class=\"{\'fa-chevron-up\': states.menuDisplays.moreOptions, \'fa-chevron-down\': !states.menuDisplays.moreOptions}\"></i>\r\n                </a>\r\n                <div class=\"more-options floating-form\" style=\"display: none;width:250px;\">\r\n                    <div ng-if=\"chartProperties.type == \'Scattered Plot\'\">\r\n                        <label>Group By:&nbsp;</label>\r\n                        <div class=\"restrict-dropdown-menu input-group\">\r\n                            <input type=\"text\" class=\"form-control\"\r\n                                   ng-model=\"chartProperties.group_by\"\r\n                                   typeahead=\"column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                                   typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                                   typeahead-focus/>\r\n                            <span class=\"dhc-clickable input-group-addon\" ng-click=\"chartProperties.group_by = undefined;apiHandle.api.loadChart()\">\r\n                                <strong>X</strong>\r\n                            </span>\r\n                        </div>\r\n                        <label>Radius:&nbsp;</label>\r\n                        <div class=\"restrict-dropdown-menu input-group\">\r\n                            <input type=\"text\" class=\"form-control\"\r\n                                   ng-model=\"chartProperties.radius\"\r\n                                   typeahead=\"column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                                   typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                                   typeahead-focus/>\r\n                            <span class=\"dhc-clickable input-group-addon\" ng-click=\"chartProperties.radius = undefined;apiHandle.api.loadChart()\">\r\n                                <strong>X</strong>\r\n                            </span>\r\n                        </div>\r\n                        <div>\r\n                            <label>Regression:&nbsp;</label>\r\n                            <br/>\r\n                            <div class=\"btn-group\" dropdown>\r\n                                <button id=\"split-button\" type=\"button\" class=\"btn btn-default\">{{getRegressionText()}}</button>\r\n                                <button type=\"button\" class=\"btn btn-default\" dropdown-toggle>\r\n                                    <span class=\"caret\"></span>\r\n                                </button>\r\n                                <ul class=\"dropdown-menu\" role=\"menu\" aria-labelledby=\"split-button\">\r\n                                    <li role=\"menuitem\" ng-repeat=\"type in chartFactory.regressionTypes\"\r\n                                        ng-click=\"chartProperties.regression = type.tag;apiHandle.api.loadChart()\">\r\n                                        <a href=\"#\">{{type.text}}</a>\r\n                                    </li>\r\n                                    <li role=\"menuitem\" ng-click=\"chartProperties.regression = undefined;apiHandle.api.loadChart()\">\r\n                                        <a href=\"#\">None</a>\r\n                                    </li>\r\n                                </ul>\r\n                            </div>\r\n                            <div ng-show=\"chartProperties.regression == \'polynomial\'\">\r\n                                <label>Regression Degree:</label>\r\n                                <input class=\"form-control\" type=\"number\" min=\"1\" ng-model=\"chartProperties.regression_degree\"\r\n                                       ng-change=\"apiHandle.api.timeoutLoadChart()\"/>\r\n                            </div>\r\n                        </div>\r\n                        <br/>\r\n                        <div>\r\n                            <div>\r\n                                <input type=\"checkbox\" ng-model=\"chartProperties.show_datalabel\" ng-click=\"apiHandle.api.timeoutLoadChart()\"/>\r\n                                Data Labels\r\n                            </div>\r\n                            <div style=\"padding-top:10px;\">\r\n                                <input type=\"checkbox\" ng-model=\"chartProperties.outlier_remove\" ng-click=\"apiHandle.api.timeoutLoadChart()\"/>\r\n                                Remove Outliers\r\n                            </div>\r\n                        </div>\r\n                    </div>\r\n                    <div ng-if=\"chartProperties.type == \'Column Chart\'\">\r\n                        <label>Group By:&nbsp;</label>\r\n                        <div class=\"restrict-dropdown-menu input-group\">\r\n                            <input type=\"text\" class=\"form-control\"\r\n                                   ng-model=\"chartProperties.group_by\"\r\n                                   typeahead=\"column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                                   typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                                   typeahead-focus/>\r\n                            <span class=\"dhc-clickable input-group-addon\" ng-click=\"chartProperties.group_by = undefined;apiHandle.api.loadChart()\">\r\n                                <strong>X</strong>\r\n                            </span>\r\n                        </div>\r\n                    </div>\r\n                    <div ng-if=\"chartProperties.type != \'Column Chart\' && chartProperties.type != \'Scattered Plot\'\">\r\n                        There are no other options for this type of chart\r\n                    </div>\r\n                </div>\r\n            </span>\r\n        </span>\r\n        <span class=\"flex-sub-container-right\">\r\n            <span dhc-click-outside dhc-open-state=\"states.menuDisplays.changeChartType\"\r\n                              dhc-close-callback=\"toggleSlide(!states.menuDisplays.changeChartType,\'change-chart-type\')\">\r\n                <a class=\"clickable\" style=\"text-decoration:none;padding-right:20px;\"\r\n                   ng-click=\"toggleSlide(!states.menuDisplays.changeChartType,\'change-chart-type\');selected=\'\';\">\r\n                    <span class=\"fake-anchor-tag\">Chart type</span>\r\n                    <i class=\"fa\" ng-class=\"{\'fa-chevron-up\': states.menuDisplays.changeChartType, \'fa-chevron-down\': !states.menuDisplays.changeChartType}\"></i>\r\n                </a>\r\n                <div class=\"change-chart-type floating-form\" style=\"display: none;width:450px;right: 0px;\">\r\n                    <label>Chart Type:</label>\r\n                    <br/>\r\n                    <div class=\"btn-group\">\r\n                        <label class=\"btn btn-primary\" ng-model=\"chartProperties.type\" btn-radio=\"\'Pie Chart\'\" ng-click=\"apiHandle.api.timeoutLoadChart()\">Pie Chart</label>\r\n                        <label class=\"btn btn-primary\" ng-model=\"chartProperties.type\" btn-radio=\"\'Box Plot\'\" ng-click=\"apiHandle.api.timeoutLoadChart()\">Box Plot</label>\r\n                        <label class=\"btn btn-primary\" ng-model=\"chartProperties.type\" btn-radio=\"\'Column Chart\'\" ng-click=\"apiHandle.api.timeoutLoadChart()\">Column Chart</label>\r\n                        <label class=\"btn btn-primary\" ng-model=\"chartProperties.type\" btn-radio=\"\'Scattered Plot\'\" ng-click=\"apiHandle.api.timeoutLoadChart()\">Scattered Plot</label>\r\n                    </div>\r\n                    <br/>\r\n                    <br/>\r\n                    <label>Data to show:</label>\r\n                    <br/>\r\n                    <div class=\"btn-group\">\r\n                        <label class=\"btn btn-primary\" ng-model=\"chartProperties.dataToShow\" btn-radio=\"\'all\'\" ng-click=\"apiHandle.api.timeoutLoadChart()\">All Data</label>\r\n                        <label class=\"btn btn-primary\" ng-model=\"chartProperties.dataToShow\" btn-radio=\"\'selected\'\" ng-click=\"apiHandle.api.timeoutLoadChart()\">Selected Data</label>\r\n                    </div>\r\n                </div>\r\n            </span>\r\n            <span>\r\n                <span class=\"clickable\" style=\"padding-right:5px;color:#005da0;\" ng-click=\"exportXLS()\"><i class=\"fa fa-file-excel-o\"></i></span>\r\n                <span class=\"clickable\" style=\"padding-right:5px;color:#005da0;\" ng-click=\"exportPDF()\"><i class=\"fa fa-file-pdf-o\"></i></span>\r\n                <span class=\"clickable\" style=\"padding-right:5px;color:#005da0;\" ng-repeat=\"customButton in customButtons\" ng-click=\"customButton.callback()\">\r\n                    <i class=\"fa\" ng-class=\"customButton.faClass\"></i>\r\n                </span>\r\n            </span>\r\n        </span>\r\n    </div>\r\n    <hr/>\r\n    <div style=\"position:relative\">\r\n        <i ng-show=\"isProcessing\" class=\"fa fa-spinner fa-spin fa-3x spinner\" style=\"position:absolute;top:0;left:0\"></i>\r\n        <!-- this is where the stock chart goes -->\r\n        <div style=\"position:relative;\">\r\n            <alert ng-show=\"states.needAttrs\" close=\"states.needAttrs = false\" type=\"warning\" style=\"font-size: 12px;position: absolute;z-index:999\">\r\n                Please enter required attributes\r\n            </alert>\r\n            <div class=\"dhc-chart-toolbar\" ng-show=\"chartFactory.getSpecificChartService(\'Scattered Plot\').excludedPoints.length > 0\">\r\n                <a class=\"clickable\" ng-click=\"chartFactory.getSpecificChartService(\'Scattered Plot\').resetExcludedPoints()\">\r\n                    Reset Points <i class=\"fa fa-refresh\"></i>\r\n                </a>\r\n            </div>\r\n            <div ng-attr-id=\"{{chartId}}\" style=\"width:100%;height:100%;\" ng-class=\"{\'dhc-opaque\': states.needAttrs}\">\r\n            </div>\r\n        </div>\r\n        <alert ng-show=\"alerts.generalWarning.active\" style=\"position:absolute;bottom:0;right:0;\"\r\n               close=\"alerts.generalWarning.active = false\" type=\"danger\">\r\n            {{alerts.generalWarning.message}}\r\n        </alert>\r\n    </div>\r\n</div>");}]);
+angular.module("decorated-high-charts").run(["$templateCache", function($templateCache) {$templateCache.put("DecoratedHighCharts.html","<div class=\"root\" style=\"position: relative\">\r\n    <div class=\"control flex-main-container\">\r\n        <span class=\"flex-sub-container-left\">\r\n            <span ng-if=\"chartProperties.type == \'Scattered Plot\'\">\r\n                <div class=\"restrict-dropdown-menu\">\r\n                    <label>X:</label>\r\n                    <input type=\"text\" ng-model=\"chartProperties.x_attribute\" class=\"form-control\"\r\n                           style=\"width: 12em; display: inline; height:25px;\"\r\n                           placeholder=\"Enter attribute\"\r\n                           typeahead=\"column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                           typeahead-focus\r\n                           typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                           typeahead-select-on-blur=\"true\"/>\r\n                </div>\r\n                <div class=\"restrict-dropdown-menu\">\r\n                    <label>Y:</label>\r\n                    <input type=\"text\" ng-model=\"chartProperties.y_attribute\" class=\"form-control\"\r\n                           style=\"width: 12em; display: inline; height:25px;\"\r\n                           placeholder=\"Enter attribute\"\r\n                           typeahead=\"column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                           typeahead-focus\r\n                           typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                           typeahead-select-on-blur=\"true\"/>\r\n                </div>\r\n            </span>\r\n            <span ng-if=\"chartProperties.type == \'Column Chart\'\">\r\n                <div class=\"restrict-dropdown-menu\">\r\n                    <label>X:</label>\r\n                    <input type=\"text\" ng-model=\"chartProperties.x_attribute\" class=\"form-control\"\r\n                           style=\"width: 12em; display: inline; height:25px;\"\r\n                           placeholder=\"Enter attribute\"\r\n                           typeahead=\"column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                           typeahead-focus\r\n                           typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                           typeahead-select-on-blur=\"true\"/>\r\n                </div>\r\n                <div class=\"restrict-dropdown-menu\">\r\n                    <label>Y:</label>\r\n                    <input type=\"text\" ng-model=\"chartProperties.y_attribute\" class=\"form-control\"\r\n                           style=\"width: 12em; display: inline; height:25px;\"\r\n                           placeholder=\"Enter attribute\"\r\n                           typeahead=\"column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                           typeahead-focus\r\n                           typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                           typeahead-select-on-blur=\"true\"/>\r\n                </div>\r\n            </span>\r\n            <span ng-if=\"chartProperties.type == \'Pie Chart\' || chartProperties.type == \'Box Plot\'\">\r\n                <div class=\"restrict-dropdown-menu\">\r\n                    <label>Summarize:</label>\r\n                    <input type=\"text\" ng-model=\"chartProperties.analytic\" class=\"form-control\"\r\n                           style=\"width: 12em; display: inline; height:25px;\"\r\n                           placeholder=\"Enter attribute\"\r\n                           typeahead=\"column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                           typeahead-focus\r\n                           typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                           typeahead-select-on-blur=\"true\"/>\r\n                </div>\r\n                <div class=\"restrict-dropdown-menu\">\r\n                    <label>Group By:&nbsp;&nbsp;</label>\r\n                    <input type=\"text\" ng-model=\"chartProperties.group_by\" class=\"form-control\"\r\n                           style=\"width: 12em; display: inline; height:25px;\"\r\n                           placeholder=\"Enter attribute\"\r\n                           typeahead=\"column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                           typeahead-focus\r\n                           typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                           typeahead-select-on-blur=\"true\"/>\r\n                </div>\r\n            </span>\r\n            <span dhc-click-outside dhc-open-state=\"states.menuDisplays.moreOptions\"\r\n                              dhc-close-callback=\"toggleSlide(!states.menuDisplays.moreOptions,\'more-options\')\">\r\n                <a class=\"clickable\" style=\"text-decoration:none;padding-left:20px;\"\r\n                   ng-click=\"toggleSlide(!states.menuDisplays.moreOptions,\'more-options\');selected=\'\';\">\r\n                    <span class=\"fake-anchor-tag\">More Options</span>\r\n                    <i class=\"fa\" ng-class=\"{\'fa-chevron-up\': states.menuDisplays.moreOptions, \'fa-chevron-down\': !states.menuDisplays.moreOptions}\"></i>\r\n                </a>\r\n                <div class=\"more-options floating-form\" style=\"display: none;width:250px;\">\r\n                    <div ng-if=\"chartProperties.type == \'Scattered Plot\'\">\r\n                        <label>Group By:&nbsp;</label>\r\n                        <div class=\"restrict-dropdown-menu input-group\">\r\n                            <input type=\"text\" class=\"form-control\"\r\n                                   ng-model=\"chartProperties.group_by\"\r\n                                   typeahead=\"column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                                   typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                                   typeahead-focus/>\r\n                            <span class=\"dhc-clickable input-group-addon\" ng-click=\"chartProperties.group_by = undefined;apiHandle.api.loadChart()\">\r\n                                <strong>X</strong>\r\n                            </span>\r\n                        </div>\r\n                        <label>Radius:&nbsp;</label>\r\n                        <div class=\"restrict-dropdown-menu input-group\">\r\n                            <input type=\"text\" class=\"form-control\"\r\n                                   ng-model=\"chartProperties.radius\"\r\n                                   typeahead=\"column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                                   typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                                   typeahead-focus/>\r\n                            <span class=\"dhc-clickable input-group-addon\" ng-click=\"chartProperties.radius = undefined;apiHandle.api.loadChart()\">\r\n                                <strong>X</strong>\r\n                            </span>\r\n                        </div>\r\n                        <div>\r\n                            <label>Regression:&nbsp;</label>\r\n                            <br/>\r\n                            <div class=\"btn-group\" dropdown>\r\n                                <button id=\"split-button\" type=\"button\" class=\"btn btn-default\">{{getRegressionText()}}</button>\r\n                                <button type=\"button\" class=\"btn btn-default\" dropdown-toggle>\r\n                                    <span class=\"caret\"></span>\r\n                                </button>\r\n                                <ul class=\"dropdown-menu\" role=\"menu\" aria-labelledby=\"split-button\">\r\n                                    <li role=\"menuitem\" ng-repeat=\"type in chartFactory.regressionTypes\"\r\n                                        ng-click=\"chartProperties.regression = type.tag;apiHandle.api.loadChart()\">\r\n                                        <a href=\"#\">{{type.text}}</a>\r\n                                    </li>\r\n                                    <li role=\"menuitem\" ng-click=\"chartProperties.regression = undefined;apiHandle.api.loadChart()\">\r\n                                        <a href=\"#\">None</a>\r\n                                    </li>\r\n                                </ul>\r\n                            </div>\r\n                            <div ng-show=\"chartProperties.regression == \'polynomial\'\">\r\n                                <label>Regression Degree:</label>\r\n                                <input class=\"form-control\" type=\"number\" min=\"1\" ng-model=\"chartProperties.regression_degree\"\r\n                                       ng-change=\"apiHandle.api.timeoutLoadChart()\"/>\r\n                            </div>\r\n                        </div>\r\n                        <br/>\r\n                        <div>\r\n                            <div>\r\n                                <input type=\"checkbox\" ng-model=\"chartProperties.show_datalabel\" ng-click=\"apiHandle.api.timeoutLoadChart()\"/>\r\n                                Data Labels\r\n                            </div>\r\n                            <div style=\"padding-top:10px;\">\r\n                                <input type=\"checkbox\" ng-model=\"chartProperties.outlier_remove\" ng-click=\"apiHandle.api.timeoutLoadChart()\"/>\r\n                                Remove Outliers\r\n                            </div>\r\n                        </div>\r\n                    </div>\r\n                    <div ng-if=\"chartProperties.type == \'Column Chart\'\">\r\n                        <label>Group By:&nbsp;</label>\r\n                        <div class=\"restrict-dropdown-menu input-group\">\r\n                            <input type=\"text\" class=\"form-control\"\r\n                                   ng-model=\"chartProperties.group_by\"\r\n                                   typeahead=\"column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:\'text.toString()\'\"\r\n                                   typeahead-on-select=\"apiHandle.api.loadChart()\"\r\n                                   typeahead-focus/>\r\n                            <span class=\"dhc-clickable input-group-addon\" ng-click=\"chartProperties.group_by = undefined;apiHandle.api.loadChart()\">\r\n                                <strong>X</strong>\r\n                            </span>\r\n                        </div>\r\n                    </div>\r\n                    <div ng-if=\"chartProperties.type != \'Column Chart\' && chartProperties.type != \'Scattered Plot\'\">\r\n                        There are no other options for this type of chart\r\n                    </div>\r\n                </div>\r\n            </span>\r\n        </span>\r\n        <span class=\"flex-sub-container-right\">\r\n            <span dhc-click-outside dhc-open-state=\"states.menuDisplays.changeChartType\"\r\n                              dhc-close-callback=\"toggleSlide(!states.menuDisplays.changeChartType,\'change-chart-type\')\">\r\n                <a class=\"clickable\" style=\"text-decoration:none;padding-right:20px;\"\r\n                   ng-click=\"toggleSlide(!states.menuDisplays.changeChartType,\'change-chart-type\');selected=\'\';\">\r\n                    <span class=\"fake-anchor-tag\">Chart type</span>\r\n                    <i class=\"fa\" ng-class=\"{\'fa-chevron-up\': states.menuDisplays.changeChartType, \'fa-chevron-down\': !states.menuDisplays.changeChartType}\"></i>\r\n                </a>\r\n                <div class=\"change-chart-type floating-form\" style=\"display: none;width:450px;right: 0px;\">\r\n                    <label>Chart Type:</label>\r\n                    <br/>\r\n                    <div class=\"btn-group\">\r\n                        <label class=\"btn btn-primary\" ng-model=\"chartProperties.type\" btn-radio=\"\'Pie Chart\'\" ng-click=\"apiHandle.api.timeoutLoadChart()\">Pie Chart</label>\r\n                        <label class=\"btn btn-primary\" ng-model=\"chartProperties.type\" btn-radio=\"\'Box Plot\'\" ng-click=\"apiHandle.api.timeoutLoadChart()\">Box Plot</label>\r\n                        <label class=\"btn btn-primary\" ng-model=\"chartProperties.type\" btn-radio=\"\'Column Chart\'\" ng-click=\"apiHandle.api.timeoutLoadChart()\">Column Chart</label>\r\n                        <label class=\"btn btn-primary\" ng-model=\"chartProperties.type\" btn-radio=\"\'Scattered Plot\'\" ng-click=\"apiHandle.api.timeoutLoadChart()\">Scattered Plot</label>\r\n                    </div>\r\n                    <br/>\r\n                    <br/>\r\n                    <label>Data to show:</label>\r\n                    <br/>\r\n                    <div class=\"btn-group\">\r\n                        <label class=\"btn btn-primary\" ng-model=\"chartProperties.dataToShow\" btn-radio=\"\'all\'\" ng-click=\"apiHandle.api.timeoutLoadChart()\">All Data</label>\r\n                        <label class=\"btn btn-primary\" ng-model=\"chartProperties.dataToShow\" btn-radio=\"\'selected\'\" ng-click=\"apiHandle.api.timeoutLoadChart()\">Selected Data</label>\r\n                    </div>\r\n                </div>\r\n            </span>\r\n            <span>\r\n                <span class=\"clickable\" style=\"padding-right:5px;color:#005da0;\" ng-click=\"exportXLS()\"><i class=\"fa fa-file-excel-o\"></i></span>\r\n                <span class=\"clickable\" style=\"padding-right:5px;color:#005da0;\" ng-click=\"exportPDF()\"><i class=\"fa fa-file-pdf-o\"></i></span>\r\n                <span class=\"clickable\" style=\"padding-right:5px;color:#005da0;\" ng-repeat=\"customButton in customButtons\" ng-click=\"customButton.callback()\">\r\n                    <i class=\"fa\" ng-class=\"customButton.faClass\"></i>\r\n                </span>\r\n            </span>\r\n        </span>\r\n    </div>\r\n    <hr/>\r\n    <div style=\"position:relative\">\r\n        <i ng-show=\"isProcessing\" class=\"fa fa-spinner fa-spin fa-3x spinner\" style=\"position:absolute;top:0;left:0\"></i>\r\n        <!-- this is where the stock chart goes -->\r\n        <div style=\"position:relative;\">\r\n            <alert ng-show=\"states.needAttrs\" close=\"states.needAttrs = false\" type=\"warning\" style=\"font-size: 12px;position: absolute;z-index:999\">\r\n                Please enter required attributes\r\n            </alert>\r\n            <div class=\"dhc-chart-toolbar\" ng-show=\"apiHandle.api.excludedPoints.length > 0\">\r\n                <a class=\"clickable\" ng-click=\"apiHandle.api.resetExcludedPoints()\">\r\n                    Reset Points <i class=\"fa fa-refresh\"></i>\r\n                </a>\r\n            </div>\r\n            <div ng-attr-id=\"{{chartId}}\" style=\"width:100%;height:100%;\" ng-class=\"{\'dhc-opaque\': states.needAttrs}\">\r\n            </div>\r\n        </div>\r\n        <alert ng-show=\"alerts.generalWarning.active\" style=\"position:absolute;bottom:0;right:0;\"\r\n               close=\"alerts.generalWarning.active = false\" type=\"danger\">\r\n            {{alerts.generalWarning.message}}\r\n        </alert>\r\n    </div>\r\n</div>");}]);
