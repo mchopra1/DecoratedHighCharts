@@ -85,6 +85,11 @@
                             undefined;
                     });
                     $scope.chartId = _.uniqueId('decorated-highchart-');
+                    $scope.$flexibleRemoveBtn = $('<i class="fa fa-remove clickable"></i>').css({
+                        'position': 'absolute',
+                        'z-index': 0.99,
+                        'color': 'red'
+                    });
                 },
                 link: function (scope, elem, attrs) {
                     scope.chartFactory = chartFactory;
@@ -212,9 +217,9 @@
                     $timeout(function () {
                         scope.apiHandle.api.loadChart();
                         // Initialize dom element variable
-                        highchartDOMElem = $($('#' + scope.chartId).get()[0]);
-                        $(highchartDOMElem).hover(null, function () {
-                            $flexibleRemoveBtn.detach();
+                        scope.highchartDOMElem = $($('#' + scope.chartId).get()[0]);
+                        $(scope.highchartDOMElem).hover(null, function () {
+                            scope.$flexibleRemoveBtn.detach();
                         });
                     });
 
@@ -268,30 +273,6 @@
  */
 
 var TURBO_THRESHOLD = 2000;
-
-var highchartDOMElem;
-
-const $flexibleRemoveBtn = $('<i class="fa fa-remove clickable"></i>').css({
-    'position': 'absolute',
-    'z-index': 0.99,
-    'color': 'red'
-});
-
-//angular.module('decorated-high-charts').factory('chartDataUniverse', function () {
-//    return {
-//        data: [],
-//        getSelectedRowsData: function(){
-//            return this.data;
-//        },
-//        scatterPlotPointClickCallback: function(){},
-//        setupUniverse: function(pScope){
-//            this.data = pScope.data;
-//            this.getSelectedRowsData = pScope.getSelectedRowsData || this.getSelectedRowsData;
-//            this.scatterPlotPointClickCallback = pScope.scatterPlotPointClickCallback || this.scatterPlotPointClickCallback;
-//            this.key = pScope.key;
-//        }
-//    }
-//});
 
 angular.module('decorated-high-charts').factory('chartFactory', function (boxPlotProvider, scatteredChartProvider, pieChartProvider, columnChartProvider) {
     var chartFactoryMap = {
@@ -768,9 +749,9 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                             mouseOver: function(){
                                 const point = this;
 
-                                $flexibleRemoveBtn.detach();
-                                $flexibleRemoveBtn.off('click');
-                                $flexibleRemoveBtn.on('click', function () {
+                                chartScope.$flexibleRemoveBtn.detach();
+                                chartScope.$flexibleRemoveBtn.off('click');
+                                chartScope.$flexibleRemoveBtn.on('click', function () {
                                     $timeout(function(){
                                         if (point.id && excludedPoints.indexOf(point.id) == -1) {
                                             excludedPoints.push(point.id);
@@ -780,16 +761,16 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                                             point.remove();
                                             obj.redrawRegression(series, chartProperties);
                                         }
-                                        $flexibleRemoveBtn.detach();
+                                        chartScope.$flexibleRemoveBtn.detach();
                                     });
                                 });
 
-                                $flexibleRemoveBtn.css({
+                                chartScope.$flexibleRemoveBtn.css({
                                     'top': (this.series.chart.yAxis[0].toPixels(this.y) - 15) + 'px',
                                     'left': (this.series.chart.xAxis[0].toPixels(this.x)) + 'px'
                                 });
 
-                                $flexibleRemoveBtn.appendTo($(highchartDOMElem));
+                                chartScope.$flexibleRemoveBtn.appendTo($(chartScope.highchartDOMElem));
                             }
                         }
                     }

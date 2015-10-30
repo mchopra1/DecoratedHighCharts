@@ -85,6 +85,11 @@
                             undefined;
                     });
                     $scope.chartId = _.uniqueId('decorated-highchart-');
+                    $scope.$flexibleRemoveBtn = $('<i class="fa fa-remove clickable"></i>').css({
+                        'position': 'absolute',
+                        'z-index': 0.99,
+                        'color': 'red'
+                    });
                 },
                 link: function (scope, elem, attrs) {
                     scope.chartFactory = chartFactory;
@@ -212,9 +217,9 @@
                     $timeout(function () {
                         scope.apiHandle.api.loadChart();
                         // Initialize dom element variable
-                        highchartDOMElem = $($('#' + scope.chartId).get()[0]);
-                        $(highchartDOMElem).hover(null, function () {
-                            $flexibleRemoveBtn.detach();
+                        scope.highchartDOMElem = $($('#' + scope.chartId).get()[0]);
+                        $(scope.highchartDOMElem).hover(null, function () {
+                            scope.$flexibleRemoveBtn.detach();
                         });
                     });
 
