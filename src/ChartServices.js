@@ -63,7 +63,9 @@ angular.module('decorated-high-charts').factory('pieChartProvider', function (co
                 {
                     chart: {
                         type: "pie",
-                        marginTop: 40
+                        marginTop: 40,
+                        height: chartScope.states.chart ? chartScope.states.chart.chartHeight : undefined,
+                        width: chartScope.states.chart ? chartScope.states.chart.chartWidth : undefined
                     },
                     plotOptions: {
                         pie: {
@@ -127,7 +129,9 @@ angular.module('decorated-high-charts').factory('boxPlotProvider', function (com
             var cfgTemplate = _.extend(_.clone(commonHighchartConfig(chartScope)), {
                 chart: {
                     type: 'boxplot',
-                    marginTop: 40
+                    marginTop: 40,
+                    height: chartScope.states.chart ? chartScope.states.chart.chartHeight : undefined,
+                    width: chartScope.states.chart ? chartScope.states.chart.chartWidth : undefined
                 },
                 title: {
                     text: null
@@ -409,7 +413,9 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 chart: {
                     type: 'scatter',
                     zoomType: 'xy',
-                    marginTop: 40
+                    marginTop: -12,
+                    height: chartScope.states.chart ? chartScope.states.chart.chartHeight : undefined,
+                    width: chartScope.states.chart ? chartScope.states.chart.chartWidth : undefined
                 },
                 legend: {
                     enabled: true
@@ -539,17 +545,8 @@ angular.module('decorated-high-charts').factory('commonHighchartConfig', functio
     function getCommonCfg(chartScope) {
         return {
             chart: {
-                height: chartScope.states.chart ? chartScope.states.chart.chartHeight : undefined,
-                width: chartScope.states.chart ? chartScope.states.chart.chartWidth : undefined,
                 animation: false,
-                marginTop: -12,
-                events: {
-                    load: function () {
-                        for (var i = 0; i < this.exportSVGElements.length; i++) {
-                            this.exportSVGElements[i].toFront();
-                        }
-                    }
-                }
+                marginTop: -12
             },
             title: {
                 text: "",
@@ -608,7 +605,11 @@ angular.module('decorated-high-charts').factory('columnChartProvider', function 
         produceChartOption: function (chartProperties, chartScope, onlyOnSelectedRows) {
 
             var cfgTemplate = _.extend(_.clone(commonHighchartConfig(chartScope)), {
-                chart: {type: 'column'},
+                chart: {
+                    type: 'column',
+                    height: chartScope.states.chart ? chartScope.states.chart.chartHeight : undefined,
+                    width: chartScope.states.chart ? chartScope.states.chart.chartWidth : undefined
+                },
                 xAxis: {title: {text: null}, showEmpty: false},
                 yAxis: {title: {text: null}, showEmpty: false},
                 plotOptions: {
@@ -618,6 +619,9 @@ angular.module('decorated-high-charts').factory('columnChartProvider', function 
                     }
                 }
             });
+
+            cfgTemplate.chart.height = chartScope.states.chart ? chartScope.states.chart.chartHeight : undefined;
+            cfgTemplate.chart.width = chartScope.states.chart ? chartScope.states.chart.chartWidth : undefined;
 
             // TODO correct rough around the edges - i.e. aggregation logic for average and count, labels etc
             var x = chartProperties.x_attribute,
