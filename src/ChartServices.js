@@ -413,7 +413,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 chart: {
                     type: 'scatter',
                     zoomType: 'xy',
-                    marginTop: -12,
+                    marginTop: 10,
                     height: chartScope.states.chart ? chartScope.states.chart.chartHeight : undefined,
                     width: chartScope.states.chart ? chartScope.states.chart.chartWidth : undefined
                 },
