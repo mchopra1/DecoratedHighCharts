@@ -180,7 +180,9 @@
                             opts.chart.renderTo = scope.chartId;
                             scope.states.chart = new Highcharts.Chart(opts);
                             // Select all selected points on chart
-                            _.each(scope.getSelectedRowsData(), this.togglePoint);
+                            _.each(scope.getSelectedRowsData(), function(datum){
+                                scope.apiHandle.api.togglePoint(datum[scope.key]);
+                            });
                             scope.afterRender();
                         },
                         timeoutLoadChart: function(){
