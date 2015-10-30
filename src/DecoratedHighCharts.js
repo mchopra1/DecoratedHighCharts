@@ -179,6 +179,8 @@
                             var opts = chartFactory.getHighchartOptions(scope, this.excludedPoints);
                             opts.chart.renderTo = scope.chartId;
                             scope.states.chart = new Highcharts.Chart(opts);
+                            // Select all selected points on chart
+                            _.each(scope.getSelectedRowsData(), this.togglePoint);
                             scope.afterRender();
                         },
                         timeoutLoadChart: function(){

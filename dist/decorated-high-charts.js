@@ -179,6 +179,8 @@
                             var opts = chartFactory.getHighchartOptions(scope, this.excludedPoints);
                             opts.chart.renderTo = scope.chartId;
                             scope.states.chart = new Highcharts.Chart(opts);
+                            // Select all selected points on chart
+                            _.each(scope.getSelectedRowsData(), this.togglePoint);
                             scope.afterRender();
                         },
                         timeoutLoadChart: function(){
@@ -765,7 +767,6 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                                             const series = point.series;
                                             point.remove();
                                             obj.redrawRegression(series, chartProperties);
-                                            chartScope.afterRender();
                                         }
                                         chartScope.$flexibleRemoveBtn.detach();
                                     });
@@ -813,6 +814,8 @@ angular.module('decorated-high-charts').factory('commonHighchartConfig', functio
     function getCommonCfg(chartScope) {
         return {
             chart: {
+                height: chartScope.states.chart ? chartScope.states.chart.chartHeight : undefined,
+                width: chartScope.states.chart ? chartScope.states.chart.chartWidth : undefined,
                 animation: false,
                 marginTop: -12,
                 events: {
