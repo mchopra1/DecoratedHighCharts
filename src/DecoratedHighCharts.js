@@ -139,9 +139,37 @@
                             "No Regression";
                     };
 
+                    /**
+                     * Given an array of column objects, return the columns which are allowed for this chart type
+                     * @param columnSet
+                     * @returns {*}
+                     */
                     scope.getValidColumns = function(columnSet){
                         return _.filter(columnSet, function(column){
                             return getVisualizationTypes(column).indexOf(scope.chartProperties.type.toUpperCase()) > -1;
+                        });
+                    };
+
+                    /**
+                     * When we change the chart type, some attributes may not be allowed for a new chart type. Let's
+                     * check.
+                     */
+                    scope.changeChartType = function(){
+                        const categoricalColumns = ["group_by"];
+                        $timeout(function(){
+                            _.each(scope.apiHandle.api.getRelevantProperties(), function(prop){
+                                if( categoricalColumns.indexOf(prop) > -1  ){
+                                    if( scope.getValidColumns(scope.categoricalColumns).indexOf(scope.chartProperties[prop]) == -1 ){
+                                        delete scope.chartProperties[prop];
+                                    }
+                                }
+                                else{
+                                    if( scope.getValidColumns(scope.numericalColumns).indexOf(scope.chartProperties[prop]) == -1 ){
+                                        delete scope.chartProperties[prop];
+                                    }
+                                }
+                            });
+                            scope.apiHandle.api.timeoutLoadChart();
                         });
                     };
 

@@ -21,64 +21,69 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
         }
     };
 
-    $scope.numericalColumns = [  {
-        "colTag": "oas",
-        "text": "OAS",
-        "aggregationMethod": "AVERAGE",
-        "visualizationTypes": [
-            "BOX_PLOT",
-            "SCATTERED_PLOT",
-            "COLUMN_CHART"
-        ]
-    },{
-        colTag: "wal_to_worst",
-        text: "WAL",
-        "aggregationMethod": "AVERAGE",
-        "visualizationTypes": [
-            "BOX_PLOT",
-            "SCATTERED_PLOT",
-            "COLUMN_CHART"
-        ]
-    },{
-        colTag: "ytw",
-        text: "YTW",
-        "aggregationMethod": "AVERAGE",
-        "visualizationTypes": [
-            "BOX_PLOT",
-            "SCATTERED_PLOT",
-            "COLUMN_CHART"
-        ]
-    },{
-        "colTag": "amt_issued",
-        "text": "Amt Issued",
-        "aggregationMethod": "SUM",
-        "visualizationTypes": [
-            "PIE_CHART",
-            "BOX_PLOT",
-            "SCATTERED_PLOT",
-            "COLUMN_CHART"
-        ]
-    }];
+    $http.get("columnDefs.json").then(function(data){
+        $scope.numericalColumns = _.where(data.data, {format: "NUMERICAL"});
+        $scope.categoricalColumns = _.where(data.data, {format: "CATEGORICAL"});
+    }, function(){
+        $scope.numericalColumns = [  {
+            "colTag": "oas",
+            "text": "OAS",
+            "aggregationMethod": "AVERAGE",
+            "visualizationTypes": [
+                "BOX_PLOT",
+                "SCATTERED_PLOT",
+                "COLUMN_CHART"
+            ]
+        },{
+            colTag: "wal_to_worst",
+            text: "WAL",
+            "aggregationMethod": "AVERAGE",
+            "visualizationTypes": [
+                "BOX_PLOT",
+                "SCATTERED_PLOT",
+                "COLUMN_CHART"
+            ]
+        },{
+            colTag: "ytw",
+            text: "YTW",
+            "aggregationMethod": "AVERAGE",
+            "visualizationTypes": [
+                "BOX_PLOT",
+                "SCATTERED_PLOT",
+                "COLUMN_CHART"
+            ]
+        },{
+            "colTag": "amt_issued",
+            "text": "Amt Issued",
+            "aggregationMethod": "SUM",
+            "visualizationTypes": [
+                "PIE_CHART",
+                "BOX_PLOT",
+                "SCATTERED_PLOT",
+                "COLUMN_CHART"
+            ]
+        }];
 
-    $scope.categoricalColumns = [{
-        colTag: "issuer_sname",
-        text: "Issuer Name",
-        "visualizationTypes": [
-            "BOX_PLOT",
-            "SCATTERED_PLOT",
-            "PIE_CHART",
-            "COLUMN_CHART"
-        ]
-    },{
-        colTag: "barclay_sector4",
-        text: "Barclays Sub-Industry",
-        "visualizationTypes": [
-            "BOX_PLOT",
-            "SCATTERED_PLOT",
-            "PIE_CHART",
-            "COLUMN_CHART"
-        ]
-    }];
+        $scope.categoricalColumns = [{
+            colTag: "issuer_sname",
+            text: "Issuer Name",
+            "visualizationTypes": [
+                "BOX_PLOT",
+                "SCATTERED_PLOT",
+                "PIE_CHART",
+                "COLUMN_CHART"
+            ]
+        },{
+            colTag: "barclay_sector4",
+            text: "Barclays Sub-Industry",
+            "visualizationTypes": [
+                "BOX_PLOT",
+                "SCATTERED_PLOT",
+                "PIE_CHART",
+                "COLUMN_CHART"
+            ]
+        }];
+    });
 
     $scope.customButtons = [{
         callback: function(){
