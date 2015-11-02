@@ -200,6 +200,20 @@
                                     return scope.chartProperties[prop]
                                 }).indexOf(undefined) > -1 ) {
                                 scope.states.needAttrs = true;
+                                if( !scope.states.chart ){
+                                    scope.states.chart = new Highcharts.Chart({
+                                        chart: {
+                                            renderTo: scope.chartId
+                                        },
+                                        exporting: {
+                                            enabled: false
+                                        },
+                                        title: {
+                                            text: ""
+                                        },
+                                        data: []
+                                    });
+                                }
                                 return;
                             }
                             scope.beforeRender();

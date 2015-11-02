@@ -210,8 +210,8 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 _.each(groupedData[category], function (item) {
                     if (item[xAttr.colTag] != null && item[yAttr.colTag] && excludedPoints.indexOf(item[chartScope.key]) == -1)
                         data.push({
-                            id: item[key],
-                            name: item[key],
+                            id: item[chartScope.key],
+                            name: item[chartScope.key],
                             x: item[xAttr.colTag],
                             y: item[yAttr.colTag],
                             z: item[radius.colTag]

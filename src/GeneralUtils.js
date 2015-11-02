@@ -83,18 +83,6 @@
         const $ctxMenu = scope.$ctxMenu;
         $ctxMenu.find(".dropdown-menu li").remove();
 
-        function removeAxis() {
-            return $("<li><a><i class='fa fa-remove'></i>&nbsp;Remove Axis</a></li>")
-                .click(function () {
-                    /**
-                     * remove any series that is on the axis
-                     */
-                    while (axis.series && axis.series.length !== 0)
-                        scope.removeSeries(axis.series[0]);
-                    axis.remove();
-                });
-        }
-
         function editAxisTitle() {
             const $input = $("<input type='text' class='form-control' style='position:relative; left: 10%; width: 80%;'/>");
             $input.val(axis.axisTitle.textStr);
@@ -114,8 +102,7 @@
         }
 
         $ctxMenu.children(".dropdown-menu")
-            .append(editAxisTitle())
-            .append(removeAxis());
+            .append(editAxisTitle());
 
         dhc.showCtxMenu($ctxMenu, event);
         // focus on the edit axis title input

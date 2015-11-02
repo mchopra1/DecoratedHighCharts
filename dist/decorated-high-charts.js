@@ -200,6 +200,20 @@
                                     return scope.chartProperties[prop]
                                 }).indexOf(undefined) > -1 ) {
                                 scope.states.needAttrs = true;
+                                if( !scope.states.chart ){
+                                    scope.states.chart = new Highcharts.Chart({
+                                        chart: {
+                                            renderTo: scope.chartId
+                                        },
+                                        exporting: {
+                                            enabled: false
+                                        },
+                                        title: {
+                                            text: ""
+                                        },
+                                        data: []
+                                    });
+                                }
                                 return;
                             }
                             scope.beforeRender();
@@ -515,8 +529,8 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 _.each(groupedData[category], function (item) {
                     if (item[xAttr.colTag] != null && item[yAttr.colTag] && excludedPoints.indexOf(item[chartScope.key]) == -1)
                         data.push({
-                            id: item[key],
-                            name: item[key],
+                            id: item[chartScope.key],
+                            name: item[chartScope.key],
                             x: item[xAttr.colTag],
                             y: item[yAttr.colTag],
                             z: item[radius.colTag]
@@ -1242,18 +1256,6 @@ function aggregate(dataToAgg, y) {
         const $ctxMenu = scope.$ctxMenu;
         $ctxMenu.find(".dropdown-menu li").remove();
 
-        function removeAxis() {
-            return $("<li><a><i class='fa fa-remove'></i>&nbsp;Remove Axis</a></li>")
-                .click(function () {
-                    /**
-                     * remove any series that is on the axis
-                     */
-                    while (axis.series && axis.series.length !== 0)
-                        scope.removeSeries(axis.series[0]);
-                    axis.remove();
-                });
-        }
-
         function editAxisTitle() {
             const $input = $("<input type='text' class='form-control' style='position:relative; left: 10%; width: 80%;'/>");
             $input.val(axis.axisTitle.textStr);
@@ -1273,8 +1275,7 @@ function aggregate(dataToAgg, y) {
         }
 
         $ctxMenu.children(".dropdown-menu")
-            .append(editAxisTitle())
-            .append(removeAxis());
+            .append(editAxisTitle());
 
         dhc.showCtxMenu($ctxMenu, event);
         // focus on the edit axis title input
