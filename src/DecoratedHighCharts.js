@@ -178,7 +178,7 @@
                      * and then export this table to Excel
                      */
                     scope.exportXLS = function () {
-                        var html = dhc.seriesToHTML(scope.states.chart.series);
+                        var html = dhc.chartToHTML(scope.states.chart);
                         if (window.navigator.msSaveBlob)
                             window.navigator.msSaveBlob(new Blob([html]), "time-series-export.xls");
                         else
