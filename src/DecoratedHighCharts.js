@@ -234,8 +234,11 @@
                         },
                         togglePoint: function(key){
                             const point = scope.states.chart.get(key);
-                            if( point )
+                            if( point ) {
                                 point.select(null, true);
+                                if( scope.dataToShow === 'selected' )
+                                    scope.apiHandle.api.loadChart();
+                            }
                         },
                         getPointStatus: function(key){
                             const point = scope.states.chart.get(key);
