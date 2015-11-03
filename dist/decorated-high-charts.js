@@ -223,7 +223,7 @@
                             scope.states.chart = new Highcharts.Chart(opts);
                             // Select all selected points on chart
                             _.each(scope.getSelectedRowsData(), function(datum){
-                                scope.apiHandle.api.togglePoint(datum[scope.key]);
+                                scope.apiHandle.api.togglePoint(datum[scope.key], true);
                             });
                             scope.afterRender();
                         },
@@ -232,13 +232,12 @@
                                 scope.apiHandle.api.loadChart();
                             });
                         },
-                        togglePoint: function(key){
+                        togglePoint: function(key, skipLoad){
                             const point = scope.states.chart.get(key);
-                            if( point ) {
+                            if( point )
                                 point.select(null, true);
-                                if( scope.dataToShow === 'selected' )
-                                    scope.apiHandle.api.loadChart();
-                            }
+                            if( !skipLoad && scope.chartProperties.dataToShow === 'selected' )
+                                scope.apiHandle.api.loadChart();
                         },
                         getPointStatus: function(key){
                             const point = scope.states.chart.get(key);
