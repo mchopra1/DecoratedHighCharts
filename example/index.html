@@ -30,12 +30,16 @@
                     scatter-plot-point-click-callback="clickCallback(point)"
                     get-selected-rows-data="getSelectedRowsData()"
                     before-render="beforeRender()"
-                    after-render="afterRender()">
+                    after-render="afterRender()"
+                    chart-options="chartOptions">
             </decorated-high-charts>
         </div>
     </div>
     <h3>Change something</h3>
     <hr/>
+    <button ng-click="addSeries()">Add Series</button>
+    <br/>
+    <button ng-click="removeSeries()">Remove Series</button>
     <div class="container">
 
     </div>
@@ -52,12 +56,12 @@
 <script src="../bower_components/highstock-release/highstock-all.js"></script>
 <script src="../bower_components/Custom-Events/customEvents.js"></script>
 <!-- Component src JS -->
-<script src="../src/Export.js"></script>
-<script src="../src/GeneralUtils.js"></script>
-<script src="../src/MenuBuilderUtils.js"></script>
-<script src="../src/DecoratedHighCharts.js"></script>
-<script src="../src/ChartServices.js"></script>
-<!--<script src="../dist/decorated-high-charts.js"></script>-->
+<!--<script src="../src/Export.js"></script>-->
+<!--<script src="../src/GeneralUtils.js"></script>-->
+<!--<script src="../src/MenuBuilderUtils.js"></script>-->
+<!--<script src="../src/DecoratedHighCharts.js"></script>-->
+<!--<script src="../src/ChartServices.js"></script>-->
+<script src="../dist/decorated-high-charts.js"></script>
 <!-- example -->
 <script src="MainCtrl.js"></script>
 </body>

@@ -77,9 +77,10 @@
                     /**
                      * Additional HighCharts options to layer on defaults
                      */
-                    highchartOptions: "=?"
+                    chartOptions: "=?"
                 },
                 controller: function($scope, $element){
+                    $scope.chartOptions = $scope.chartOptions || {};
                     $scope.chartProperties.dataToShow = $scope.chartProperties.dataToShow ? $scope.chartProperties.dataToShow : "all";
                     // Map colTags to actual objects as the dropdowns map by reference not by value
                     _.each(chartFactory.getRelevantProperties($scope.chartProperties), function(property){
@@ -131,6 +132,11 @@
                             $ctrl.slideUp(500);
                         // Since we are using some jQuery, after the end of $timeout a $apply is fired implicitly
                         $timeout(function () {});
+                    };
+
+                    scope.allPanelHidden = function(){
+                        return scope.chartOptions.disableExporting && scope.chartOptions.disableChartType &&
+                               scope.chartOptions.disableMoreOptions && scope.chartOptions.disablePropertyChooser;
                     };
 
                     scope.getRegressionText = function(){
@@ -226,6 +232,16 @@
                                 scope.apiHandle.api.togglePoint(datum[scope.key], true);
                             });
                             scope.afterRender();
+                        },
+                        addAdHocSeries: function(seriesOptions){
+                            var ser = scope.states.chart.addSeries(seriesOptions);
+                            return ser;
+                        },
+                        removeAdHocSeries: function(seriesId){
+                            var series = scope.states.chart.get(seriesId);
+                            if( series )
+                                series.remove();
+                            return !!series;
                         },
                         timeoutLoadChart: function(){
                             $timeout(function(){

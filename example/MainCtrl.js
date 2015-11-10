@@ -21,6 +21,13 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
         }
     };
 
+    $scope.chartOptions = {
+        disableExporting: true,
+        disableChartType: true,
+        disableMoreOptions: true,
+        disablePropertyChooser: true
+    };
+
     $http.get("columnDefs.json").then(function(data){
         $scope.numericalColumns = _.where(data.data, {format: "NUMERICAL"});
         $scope.categoricalColumns = _.where(data.data, {format: "CATEGORICAL"});
@@ -85,12 +92,12 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
         }];
     });
 
-    $scope.customButtons = [{
-        callback: function(){
-            console.log("custom callback fired!");
-        },
-        faClass: "fa-remove"
-    }];
+    //$scope.customButtons = [{
+    //    callback: function(){
+    //        console.log("custom callback fired!");
+    //    },
+    //    faClass: "fa-remove"
+    //}];
 
     $scope.beforeRender = function(){
         console.log("before render called!");
@@ -109,6 +116,23 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
         return _.filter($scope.data, function(datum){
             return ["00206RCD2","B0A01QJZ2"].indexOf(datum.cusip) > -1;
         });
+    };
+
+    $scope.addSeries = function(){
+        $scope.seriesAdded = $scope.apiHandle.api.addAdHocSeries({
+            id: _.uniqueId("ser"),
+            data: [{
+                x: 50,
+                y: 50
+            }, {
+                x: 100,
+                y: 100
+            }]
+        });
+    };
+
+    $scope.removeSeries = function(){
+        $scope.apiHandle.api.removeAdHocSeries($scope.seriesAdded.options.id);
     };
 
     $scope.apiHandle = {};

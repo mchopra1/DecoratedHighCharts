@@ -1,73 +1,75 @@
 <div class="root" style="position: relative">
     <div class="control flex-main-container">
         <span class="flex-sub-container-left">
-            <span ng-if="chartProperties.type == 'Scattered Plot'">
-                <div class="restrict-dropdown-menu">
-                    <label>X:</label>
-                    <input type="text" ng-model="chartProperties.x_attribute" class="form-control"
-                           style="width: 12em; display: inline; height:25px;"
-                           placeholder="Enter attribute"
-                           typeahead="column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
-                           typeahead-focus
-                           typeahead-on-select="apiHandle.api.loadChart()"
-                           typeahead-select-on-blur="true"/>
-                </div>
-                <div class="restrict-dropdown-menu">
-                    <label>Y:</label>
-                    <input type="text" ng-model="chartProperties.y_attribute" class="form-control"
-                           style="width: 12em; display: inline; height:25px;"
-                           placeholder="Enter attribute"
-                           typeahead="column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
-                           typeahead-focus
-                           typeahead-on-select="apiHandle.api.loadChart()"
-                           typeahead-select-on-blur="true"/>
-                </div>
+            <span ng-hide="chartOptions.disablePropertyChooser">
+                <span ng-if="chartProperties.type == 'Scattered Plot'">
+                    <div class="restrict-dropdown-menu">
+                        <label>X:</label>
+                        <input type="text" ng-model="chartProperties.x_attribute" class="form-control"
+                               style="width: 12em; display: inline; height:25px;"
+                               placeholder="Enter attribute"
+                               typeahead="column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
+                               typeahead-focus
+                               typeahead-on-select="apiHandle.api.loadChart()"
+                               typeahead-select-on-blur="true"/>
+                    </div>
+                    <div class="restrict-dropdown-menu">
+                        <label>Y:</label>
+                        <input type="text" ng-model="chartProperties.y_attribute" class="form-control"
+                               style="width: 12em; display: inline; height:25px;"
+                               placeholder="Enter attribute"
+                               typeahead="column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
+                               typeahead-focus
+                               typeahead-on-select="apiHandle.api.loadChart()"
+                               typeahead-select-on-blur="true"/>
+                    </div>
+                </span>
+                <span ng-if="chartProperties.type == 'Column Chart'">
+                    <div class="restrict-dropdown-menu">
+                        <label>X:</label>
+                        <input type="text" ng-model="chartProperties.x_attribute" class="form-control"
+                               style="width: 12em; display: inline; height:25px;"
+                               placeholder="Enter attribute"
+                               typeahead="column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
+                               typeahead-focus
+                               typeahead-on-select="apiHandle.api.loadChart()"
+                               typeahead-select-on-blur="true"/>
+                    </div>
+                    <div class="restrict-dropdown-menu">
+                        <label>Y:</label>
+                        <input type="text" ng-model="chartProperties.y_attribute" class="form-control"
+                               style="width: 12em; display: inline; height:25px;"
+                               placeholder="Enter attribute"
+                               typeahead="column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
+                               typeahead-focus
+                               typeahead-on-select="apiHandle.api.loadChart()"
+                               typeahead-select-on-blur="true"/>
+                    </div>
+                </span>
+                <span ng-if="chartProperties.type == 'Pie Chart' || chartProperties.type == 'Box Plot'">
+                    <div class="restrict-dropdown-menu">
+                        <label>Summarize:</label>
+                        <input type="text" ng-model="chartProperties.analytic" class="form-control"
+                               style="width: 12em; display: inline; height:25px;"
+                               placeholder="Enter attribute"
+                               typeahead="column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
+                               typeahead-focus
+                               typeahead-on-select="apiHandle.api.loadChart()"
+                               typeahead-select-on-blur="true"/>
+                    </div>
+                    <div class="restrict-dropdown-menu">
+                        <label style="padding-right: 10px;">Group By:</label>
+                        <input type="text" ng-model="chartProperties.group_by" class="form-control"
+                               style="width: 12em; display: inline; height:25px;"
+                               placeholder="Enter attribute"
+                               typeahead="column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
+                               typeahead-focus
+                               typeahead-on-select="apiHandle.api.loadChart()"
+                               typeahead-select-on-blur="true"/>
+                    </div>
+                </span>
             </span>
-            <span ng-if="chartProperties.type == 'Column Chart'">
-                <div class="restrict-dropdown-menu">
-                    <label>X:</label>
-                    <input type="text" ng-model="chartProperties.x_attribute" class="form-control"
-                           style="width: 12em; display: inline; height:25px;"
-                           placeholder="Enter attribute"
-                           typeahead="column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
-                           typeahead-focus
-                           typeahead-on-select="apiHandle.api.loadChart()"
-                           typeahead-select-on-blur="true"/>
-                </div>
-                <div class="restrict-dropdown-menu">
-                    <label>Y:</label>
-                    <input type="text" ng-model="chartProperties.y_attribute" class="form-control"
-                           style="width: 12em; display: inline; height:25px;"
-                           placeholder="Enter attribute"
-                           typeahead="column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
-                           typeahead-focus
-                           typeahead-on-select="apiHandle.api.loadChart()"
-                           typeahead-select-on-blur="true"/>
-                </div>
-            </span>
-            <span ng-if="chartProperties.type == 'Pie Chart' || chartProperties.type == 'Box Plot'">
-                <div class="restrict-dropdown-menu">
-                    <label>Summarize:</label>
-                    <input type="text" ng-model="chartProperties.analytic" class="form-control"
-                           style="width: 12em; display: inline; height:25px;"
-                           placeholder="Enter attribute"
-                           typeahead="column as column.text for column in getValidColumns(numericalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
-                           typeahead-focus
-                           typeahead-on-select="apiHandle.api.loadChart()"
-                           typeahead-select-on-blur="true"/>
-                </div>
-                <div class="restrict-dropdown-menu">
-                    <label style="padding-right: 10px;">Group By:</label>
-                    <input type="text" ng-model="chartProperties.group_by" class="form-control"
-                           style="width: 12em; display: inline; height:25px;"
-                           placeholder="Enter attribute"
-                           typeahead="column as column.text for column in getValidColumns(categoricalColumns) | filter:$viewValue:$emptyOrMatch | orderBy:'text.toString()'"
-                           typeahead-focus
-                           typeahead-on-select="apiHandle.api.loadChart()"
-                           typeahead-select-on-blur="true"/>
-                </div>
-            </span>
-            <span dhc-click-outside dhc-open-state="states.menuDisplays.moreOptions"
+            <span ng-hide="chartOptions.disableMoreOptions" dhc-click-outside dhc-open-state="states.menuDisplays.moreOptions"
                               dhc-close-callback="toggleSlide(!states.menuDisplays.moreOptions,'more-options')">
                 <a class="clickable" style="text-decoration:none;padding-left:20px;"
                    ng-click="toggleSlide(!states.menuDisplays.moreOptions,'more-options');selected='';">
@@ -154,7 +156,7 @@
             </span>
         </span>
         <span class="flex-sub-container-right">
-            <span dhc-click-outside dhc-open-state="states.menuDisplays.changeChartType"
+            <span ng-hide="chartOptions.disableChartType" dhc-click-outside dhc-open-state="states.menuDisplays.changeChartType"
                               dhc-close-callback="toggleSlide(!states.menuDisplays.changeChartType,'change-chart-type')">
                 <a class="clickable" style="text-decoration:none;padding-right:20px;"
                    ng-click="toggleSlide(!states.menuDisplays.changeChartType,'change-chart-type');selected='';">
@@ -180,16 +182,16 @@
                     </div>
                 </div>
             </span>
-            <span>
+            <span ng-hide="chartOptions.disableExporting">
                 <span class="clickable" style="padding-right:5px;color:#005da0;" ng-click="exportXLS()"><i class="fa fa-file-excel-o"></i></span>
                 <span class="clickable" style="padding-right:5px;color:#005da0;" ng-click="exportPDF()"><i class="fa fa-file-pdf-o"></i></span>
-                <span class="clickable" style="padding-right:5px;color:#005da0;" ng-repeat="customButton in customButtons" ng-click="customButton.callback()">
-                    <i class="fa" ng-class="customButton.faClass"></i>
-                </span>
+            </span>
+            <span class="clickable" style="padding-right:5px;color:#005da0;" ng-repeat="customButton in customButtons" ng-click="customButton.callback()">
+                <i class="fa" ng-class="customButton.faClass"></i>
             </span>
         </span>
     </div>
-    <hr/>
+    <hr ng-hide="allPanelHidden()"/>
     <div style="position:relative">
         <i ng-show="isProcessing" class="fa fa-spinner fa-spin fa-3x spinner" style="position:absolute;top:0;left:0"></i>
         <!-- this is where the stock chart goes -->
