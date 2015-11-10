@@ -238,13 +238,18 @@
                         },
                         addAdHocSeries: function(seriesOptions){
                             var ser = scope.states.chart.addSeries(seriesOptions);
-                            if ( ser && scope.states.adHocSeriesOptions.indexOf(seriesOptions) == -1 )
-                                scope.states.adHocSeriesOptions.push(seriesOptions);
+                            var foundIndex = _.findIndex(scope.states.adHocSeriesOptions,{id: seriesOptions.id});
+                            if ( ser && foundIndex > -1 )
+                                scope.states.adHocSeriesOptions.splice(foundIndex,1);
+                            if ( ser )
+                                scope.states.adHocSeriesOptions.push(angular.copy(seriesOptions));
                             return ser;
                         },
                         removeAdHocSeries: function(seriesId){
                             var series = scope.states.chart.get(seriesId);
-                            const index = scope.states.adHocSeriesOptions.indexOf(series.options);
+                            const index = _.findIndex(scope.states.adHocSeriesOptions, function(opt){
+                                return series.options.id === opt.id;
+                            });
                             if( index > -1 )
                                 scope.states.adHocSeriesOptions.splice(index,1);
                             if( series )
