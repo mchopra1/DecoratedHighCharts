@@ -3,7 +3,7 @@
         <span class="flex-sub-container-left">
             <span ng-hide="chartOptions.disablePropertyChooser">
                 <span ng-if="chartProperties.type == 'Scattered Plot'">
-                    <div class="restrict-dropdown-menu">
+                    <div class="restrict-dropdown-menu" ng-hide="chartOptions.disableFirstProperty">
                         <label>X:</label>
                         <input type="text" ng-model="chartProperties.x_attribute" class="form-control"
                                style="width: 12em; display: inline; height:25px;"
@@ -13,7 +13,7 @@
                                typeahead-on-select="apiHandle.api.loadChart()"
                                typeahead-select-on-blur="true"/>
                     </div>
-                    <div class="restrict-dropdown-menu">
+                    <div class="restrict-dropdown-menu" ng-hide="chartOptions.disableSecondProperty">
                         <label>Y:</label>
                         <input type="text" ng-model="chartProperties.y_attribute" class="form-control"
                                style="width: 12em; display: inline; height:25px;"
@@ -25,7 +25,7 @@
                     </div>
                 </span>
                 <span ng-if="chartProperties.type == 'Column Chart'">
-                    <div class="restrict-dropdown-menu">
+                    <div class="restrict-dropdown-menu" ng-hide="chartOptions.disableFirstProperty">
                         <label>X:</label>
                         <input type="text" ng-model="chartProperties.x_attribute" class="form-control"
                                style="width: 12em; display: inline; height:25px;"
@@ -35,7 +35,7 @@
                                typeahead-on-select="apiHandle.api.loadChart()"
                                typeahead-select-on-blur="true"/>
                     </div>
-                    <div class="restrict-dropdown-menu">
+                    <div class="restrict-dropdown-menu" ng-hide="chartOptions.disableSecondProperty">
                         <label>Y:</label>
                         <input type="text" ng-model="chartProperties.y_attribute" class="form-control"
                                style="width: 12em; display: inline; height:25px;"
@@ -47,7 +47,7 @@
                     </div>
                 </span>
                 <span ng-if="chartProperties.type == 'Pie Chart' || chartProperties.type == 'Box Plot'">
-                    <div class="restrict-dropdown-menu">
+                    <div class="restrict-dropdown-menu" ng-hide="chartOptions.disableFirstProperty">
                         <label>Summarize:</label>
                         <input type="text" ng-model="chartProperties.analytic" class="form-control"
                                style="width: 12em; display: inline; height:25px;"
@@ -57,7 +57,7 @@
                                typeahead-on-select="apiHandle.api.loadChart()"
                                typeahead-select-on-blur="true"/>
                     </div>
-                    <div class="restrict-dropdown-menu">
+                    <div class="restrict-dropdown-menu" ng-hide="chartOptions.disableSecondProperty">
                         <label style="padding-right: 10px;">Group By:</label>
                         <input type="text" ng-model="chartProperties.group_by" class="form-control"
                                style="width: 12em; display: inline; height:25px;"

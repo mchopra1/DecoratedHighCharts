@@ -25,7 +25,7 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
         disableExporting: true,
         disableChartType: true,
         disableMoreOptions: true,
-        disablePropertyChooser: true
+        disableFirstProperty: true
     };
 
     $http.get("columnDefs.json").then(function(data){
@@ -123,16 +123,18 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
             id: _.uniqueId("ser"),
             data: [{
                 x: 50,
-                y: 50
+                y: 50,
+                id: "abdd"
             }, {
                 x: 100,
-                y: 100
+                y: 100,
+                id: "abd"
             }]
         });
     };
 
     $scope.removeSeries = function(){
-        $scope.apiHandle.api.removeAdHocSeries($scope.seriesAdded.options.id);
+        $scope.apiHandle.api.removeAllAdHocSeries($scope.seriesAdded.options.id);
     };
 
     $scope.apiHandle = {};

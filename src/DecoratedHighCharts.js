@@ -106,7 +106,8 @@
                             moreOptions: false,
                             changeChartType: false
                         },
-                        needAttrs: false
+                        needAttrs: false,
+                        adHocSeriesOptions: []
                     };
 
                     // disable default right-click triggered context menu
@@ -227,6 +228,8 @@
                             var opts = chartFactory.getHighchartOptions(scope, this.excludedPoints);
                             opts.chart.renderTo = scope.chartId;
                             scope.states.chart = new Highcharts.Chart(opts);
+                            if( scope.title )
+                                scope.states.chart.setTitle({text: scope.title});
                             // Select all selected points on chart
                             _.each(scope.getSelectedRowsData(), function(datum){
                                 scope.apiHandle.api.togglePoint(datum[scope.key], true);
@@ -235,13 +238,24 @@
                         },
                         addAdHocSeries: function(seriesOptions){
                             var ser = scope.states.chart.addSeries(seriesOptions);
+                            if ( ser && scope.states.adHocSeriesOptions.indexOf(seriesOptions) == -1 )
+                                scope.states.adHocSeriesOptions.push(seriesOptions);
                             return ser;
                         },
                         removeAdHocSeries: function(seriesId){
                             var series = scope.states.chart.get(seriesId);
+                            const index = scope.states.adHocSeriesOptions.indexOf(series.options);
+                            if( index > -1 )
+                                scope.states.adHocSeriesOptions.splice(index,1);
                             if( series )
                                 series.remove();
                             return !!series;
+                        },
+                        removeAllAdHocSeries: function(){
+                            _.each(scope.states.adHocSeriesOptions, function(option){
+                                scope.apiHandle.api.removeAdHocSeries(option.id);
+                            });
+                            scope.states.adHocSeriesOptions = [];
                         },
                         timeoutLoadChart: function(){
                             $timeout(function(){
@@ -264,7 +278,10 @@
                         },
                         resetExcludedPoints: function(){
                             this.excludedPoints = [];
-                            this.timeoutLoadChart();
+                            this.loadChart();
+                            _.each(scope.states.adHocSeriesOptions, function(ser){
+                                scope.apiHandle.api.addAdHocSeries(ser);
+                            });
                         }
                     };
 
