@@ -240,8 +240,8 @@
                             var ser = scope.states.chart.addSeries(seriesOptions);
                             var foundIndex = _.findIndex(scope.states.adHocSeriesOptions,{id: seriesOptions.id});
                             if ( ser && foundIndex > -1 )
-                                scope.states.adHocSeriesOptions.splice(foundIndex,1);
-                            if ( ser )
+                                scope.states.adHocSeriesOptions[foundIndex] = angular.copy(seriesOptions);
+                            else if ( ser )
                                 scope.states.adHocSeriesOptions.push(angular.copy(seriesOptions));
                             return ser;
                         },
@@ -257,8 +257,9 @@
                             return !!series;
                         },
                         removeAllAdHocSeries: function(){
-                            _.each(scope.states.adHocSeriesOptions, function(option){
-                                scope.apiHandle.api.removeAdHocSeries(option.id);
+                            const ids = _.pluck(scope.states.adHocSeriesOptions, "id");
+                            _.each(ids, function(id){
+                                scope.apiHandle.api.removeAdHocSeries(id);
                             });
                             scope.states.adHocSeriesOptions = [];
                         },
@@ -266,6 +267,12 @@
                             $timeout(function(){
                                 scope.apiHandle.api.loadChart();
                             });
+                        },
+                        changeAxisTitle: function(axis, title){
+                            if( axis == 'x')
+                                scope.states.chart.xAxis[0].setTitle({text: title});
+                            else if( axis == 'y')
+                                scope.states.chart.yAxis[0].setTitle({text: title});
                         },
                         togglePoint: function(key, skipLoad){
                             const point = scope.states.chart.get(key);

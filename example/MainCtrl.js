@@ -118,6 +118,10 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
         });
     };
 
+    $scope.changeTitle = function(){
+        $scope.apiHandle.api.changeAxisTitle('y', 'hey');
+    };
+
     $scope.addSeries = function(){
         $scope.seriesAdded = $scope.apiHandle.api.addAdHocSeries({
             id: _.uniqueId("ser"),
