@@ -25,7 +25,8 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
         disableExporting: true,
         disableChartType: true,
         disableMoreOptions: true,
-        disableFirstProperty: true
+        disableFirstProperty: true,
+        alwaysEnableLegend: true
     };
 
     $http.get("columnDefs.json").then(function(data){

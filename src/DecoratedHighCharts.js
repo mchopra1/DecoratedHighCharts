@@ -55,6 +55,10 @@
                      */
                     afterRender: "&?",
                     /**
+                     * Called if a series is removed via a legend right click
+                     */
+                    removeSeriesCallback: "&?",
+                    /**
                      * An object so outside resources can communicate with the chart if they wish
                      */
                     apiHandle: '=',
@@ -111,9 +115,9 @@
                     };
 
                     // disable default right-click triggered context menu
-                    //elem.bind('contextmenu', function () {
-                    //    return false;
-                    //});
+                    elem.bind('contextmenu', function () {
+                        return false;
+                    });
 
                     /**
                      * create a reusable context menu to be displayed
@@ -199,6 +203,12 @@
                         });
                     };
 
+                    scope.removeSeries = function(series){
+                        const id = series.id;
+                        series.remove();
+                        scope.removeSeriesCallback(id);
+                    };
+
                     scope.apiHandle.api = {
                         excludedPoints: [],
                         loadChart: function(){
@@ -243,6 +253,9 @@
                                 scope.states.adHocSeriesOptions[foundIndex] = angular.copy(seriesOptions);
                             else if ( ser )
                                 scope.states.adHocSeriesOptions.push(angular.copy(seriesOptions));
+
+                            if( ser )
+                                dhc.attachLegendEventHandlers(ser, scope);
                             return ser;
                         },
                         removeAdHocSeries: function(seriesId){

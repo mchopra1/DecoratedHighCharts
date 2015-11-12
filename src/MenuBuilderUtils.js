@@ -63,41 +63,41 @@
          * @param text
          * @returns {*|jQuery}
          */
-        function transformerMenuItemGenerator(transformFn, text) {
-            const $input = $("<input type='text' placeholder='Day(s)' class='form-control' style='position: relative; width: 80%; left: 10%;'/>");
-            return $("<li class='dropdown-submenu'><a>" + text + "</a></li>")
-                .click(function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    $input.focus();
-                })
-                .append($("<li class='dropdown-menu'><span></span></li>")
-                    .click(dhc.inertClickHandler)
-                    .append($input.on('keydown', function (keyEvent) {
-                        if (keyEvent.keyCode == 13) {
-                            if (isNaN(parseInt($input.val())) || $input.val() == '')
-                                return;
-                            const transformedSeries = transformFn(series, parseInt($input.val()));
-                            transformedSeries.disableFurtherTransformation = true;
-                            scope.addSeries(transformedSeries);
-                            scope.$ctxMenu.hide();
-                        }
-                    })));
-        }
+        //function transformerMenuItemGenerator(transformFn, text) {
+        //    const $input = $("<input type='text' placeholder='Day(s)' class='form-control' style='position: relative; width: 80%; left: 10%;'/>");
+        //    return $("<li class='dropdown-submenu'><a>" + text + "</a></li>")
+        //        .click(function (e) {
+        //            e.preventDefault();
+        //            e.stopPropagation();
+        //            $input.focus();
+        //        })
+        //        .append($("<li class='dropdown-menu'><span></span></li>")
+        //            .click(dhc.inertClickHandler)
+        //            .append($input.on('keydown', function (keyEvent) {
+        //                if (keyEvent.keyCode == 13) {
+        //                    if (isNaN(parseInt($input.val())) || $input.val() == '')
+        //                        return;
+        //                    const transformedSeries = transformFn(series, parseInt($input.val()));
+        //                    transformedSeries.disableFurtherTransformation = true;
+        //                    scope.addSeries(transformedSeries);
+        //                    scope.$ctxMenu.hide();
+        //                }
+        //            })));
+        //}
 
-        const addMA = transformerMenuItemGenerator.bind(null, seriesTransformer.toSimpleMA, "Add Simple MA");
+        //const addMA = transformerMenuItemGenerator.bind(null, seriesTransformer.toSimpleMA, "Add Simple MA");
 
-        const basis = function () {
-            return $("<li class='dropdown-submenu'><a>Show Basis vs. </a></li>")
-                .append(dhc.buildSeriesSubMenu({
-                    scope: scope,
-                    onClick: function (event, otherSeries) {
-                        const transformedSeries = seriesTransformer.toBasis(series, otherSeries);
-                        scope.addSeries(transformedSeries);
-                    },
-                    currentSeries: series
-                }));
-        };
+        //const basis = function () {
+        //    return $("<li class='dropdown-submenu'><a>Show Basis vs. </a></li>")
+        //        .append(dhc.buildSeriesSubMenu({
+        //            scope: scope,
+        //            onClick: function (event, otherSeries) {
+        //                const transformedSeries = seriesTransformer.toBasis(series, otherSeries);
+        //                scope.addSeries(transformedSeries);
+        //            },
+        //            currentSeries: series
+        //        }));
+        //};
 
         function changeType() {
             const $subMenu = $("<ul class='dropdown-menu'></ul>");
@@ -128,8 +128,8 @@
             return $("<li class='dropdown-submenu'><a>Change Axis</a></li>")
                 .append(dhc.buildAxesSubMenu(series, chart, scope));
         };
-        return disableTransformation ? [changeAxis(), basis(), changeType(), removeSeries()]
-            : [changeAxis(), addMA(), basis(), changeType(), removeSeries()];
+        return disableTransformation ? [removeSeries()]
+            : [removeSeries()];
     };
 
     /**

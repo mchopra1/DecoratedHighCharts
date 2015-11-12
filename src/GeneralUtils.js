@@ -218,22 +218,8 @@
         return yAxis && yAxis.series.length === 0;
     };
 
-    root.dhc.afterSeriesRemove = function (yAxis, securityId, scope) {
+    root.dhc.afterSeriesRemove = function (securityId, scope) {
 
-        function hasNoSeries(securityId) {
-            const chart = scope.states.chart;
-            return _.filter(chart.series, function (series) {
-                    return series.userOptions.securityId
-                        && series.userOptions.securityId === securityId;
-                }).length === 0;
-        }
-
-        // figure out if this is the last series on its given axis, if so remove the axis
-        if (dhc.isAxisEmpty(yAxis))
-            yAxis.remove();
-        // figure out if this is the last series for the given security, if so remove the security
-        if (securityId && hasNoSeries(securityId))
-            scope.apiHandle.api.removeSecurity(securityId);
     };
 
     root.dhc.removeSeriesById = function (id, scope) {

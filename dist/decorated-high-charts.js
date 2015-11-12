@@ -55,6 +55,10 @@
                      */
                     afterRender: "&?",
                     /**
+                     * Called if a series is removed via a legend right click
+                     */
+                    removeSeriesCallback: "&?",
+                    /**
                      * An object so outside resources can communicate with the chart if they wish
                      */
                     apiHandle: '=',
@@ -111,9 +115,9 @@
                     };
 
                     // disable default right-click triggered context menu
-                    //elem.bind('contextmenu', function () {
-                    //    return false;
-                    //});
+                    elem.bind('contextmenu', function () {
+                        return false;
+                    });
 
                     /**
                      * create a reusable context menu to be displayed
@@ -199,6 +203,12 @@
                         });
                     };
 
+                    scope.removeSeries = function(series){
+                        const id = series.id;
+                        series.remove();
+                        scope.removeSeriesCallback(id);
+                    };
+
                     scope.apiHandle.api = {
                         excludedPoints: [],
                         loadChart: function(){
@@ -243,6 +253,9 @@
                                 scope.states.adHocSeriesOptions[foundIndex] = angular.copy(seriesOptions);
                             else if ( ser )
                                 scope.states.adHocSeriesOptions.push(angular.copy(seriesOptions));
+
+                            if( ser )
+                                dhc.attachLegendEventHandlers(ser, scope);
                             return ser;
                         },
                         removeAdHocSeries: function(seriesId){
@@ -835,6 +848,9 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
             cfg.legend.enabled = _.reject(series, function(ser){
                 return ser.type === "spline";
             }).length > 1;
+
+            if ( chartScope.chartOptions && chartScope.chartOptions.alwaysEnableLegend )
+                cfg.legend.enabled = true;
 
             cfg.xAxis.title.text = xAttr.text;
             cfg.yAxis.title.text = yAttr.text;
@@ -1521,22 +1537,8 @@ function aggregate(dataToAgg, y) {
         return yAxis && yAxis.series.length === 0;
     };
 
-    root.dhc.afterSeriesRemove = function (yAxis, securityId, scope) {
+    root.dhc.afterSeriesRemove = function (securityId, scope) {
 
-        function hasNoSeries(securityId) {
-            const chart = scope.states.chart;
-            return _.filter(chart.series, function (series) {
-                    return series.userOptions.securityId
-                        && series.userOptions.securityId === securityId;
-                }).length === 0;
-        }
-
-        // figure out if this is the last series on its given axis, if so remove the axis
-        if (dhc.isAxisEmpty(yAxis))
-            yAxis.remove();
-        // figure out if this is the last series for the given security, if so remove the security
-        if (securityId && hasNoSeries(securityId))
-            scope.apiHandle.api.removeSecurity(securityId);
     };
 
     root.dhc.removeSeriesById = function (id, scope) {
@@ -1640,41 +1642,41 @@ function aggregate(dataToAgg, y) {
          * @param text
          * @returns {*|jQuery}
          */
-        function transformerMenuItemGenerator(transformFn, text) {
-            const $input = $("<input type='text' placeholder='Day(s)' class='form-control' style='position: relative; width: 80%; left: 10%;'/>");
-            return $("<li class='dropdown-submenu'><a>" + text + "</a></li>")
-                .click(function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    $input.focus();
-                })
-                .append($("<li class='dropdown-menu'><span></span></li>")
-                    .click(dhc.inertClickHandler)
-                    .append($input.on('keydown', function (keyEvent) {
-                        if (keyEvent.keyCode == 13) {
-                            if (isNaN(parseInt($input.val())) || $input.val() == '')
-                                return;
-                            const transformedSeries = transformFn(series, parseInt($input.val()));
-                            transformedSeries.disableFurtherTransformation = true;
-                            scope.addSeries(transformedSeries);
-                            scope.$ctxMenu.hide();
-                        }
-                    })));
-        }
+        //function transformerMenuItemGenerator(transformFn, text) {
+        //    const $input = $("<input type='text' placeholder='Day(s)' class='form-control' style='position: relative; width: 80%; left: 10%;'/>");
+        //    return $("<li class='dropdown-submenu'><a>" + text + "</a></li>")
+        //        .click(function (e) {
+        //            e.preventDefault();
+        //            e.stopPropagation();
+        //            $input.focus();
+        //        })
+        //        .append($("<li class='dropdown-menu'><span></span></li>")
+        //            .click(dhc.inertClickHandler)
+        //            .append($input.on('keydown', function (keyEvent) {
+        //                if (keyEvent.keyCode == 13) {
+        //                    if (isNaN(parseInt($input.val())) || $input.val() == '')
+        //                        return;
+        //                    const transformedSeries = transformFn(series, parseInt($input.val()));
+        //                    transformedSeries.disableFurtherTransformation = true;
+        //                    scope.addSeries(transformedSeries);
+        //                    scope.$ctxMenu.hide();
+        //                }
+        //            })));
+        //}
 
-        const addMA = transformerMenuItemGenerator.bind(null, seriesTransformer.toSimpleMA, "Add Simple MA");
+        //const addMA = transformerMenuItemGenerator.bind(null, seriesTransformer.toSimpleMA, "Add Simple MA");
 
-        const basis = function () {
-            return $("<li class='dropdown-submenu'><a>Show Basis vs. </a></li>")
-                .append(dhc.buildSeriesSubMenu({
-                    scope: scope,
-                    onClick: function (event, otherSeries) {
-                        const transformedSeries = seriesTransformer.toBasis(series, otherSeries);
-                        scope.addSeries(transformedSeries);
-                    },
-                    currentSeries: series
-                }));
-        };
+        //const basis = function () {
+        //    return $("<li class='dropdown-submenu'><a>Show Basis vs. </a></li>")
+        //        .append(dhc.buildSeriesSubMenu({
+        //            scope: scope,
+        //            onClick: function (event, otherSeries) {
+        //                const transformedSeries = seriesTransformer.toBasis(series, otherSeries);
+        //                scope.addSeries(transformedSeries);
+        //            },
+        //            currentSeries: series
+        //        }));
+        //};
 
         function changeType() {
             const $subMenu = $("<ul class='dropdown-menu'></ul>");
@@ -1705,8 +1707,8 @@ function aggregate(dataToAgg, y) {
             return $("<li class='dropdown-submenu'><a>Change Axis</a></li>")
                 .append(dhc.buildAxesSubMenu(series, chart, scope));
         };
-        return disableTransformation ? [changeAxis(), basis(), changeType(), removeSeries()]
-            : [changeAxis(), addMA(), basis(), changeType(), removeSeries()];
+        return disableTransformation ? [removeSeries()]
+            : [removeSeries()];
     };
 
     /**

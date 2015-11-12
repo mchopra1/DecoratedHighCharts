@@ -470,6 +470,9 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 return ser.type === "spline";
             }).length > 1;
 
+            if ( chartScope.chartOptions && chartScope.chartOptions.alwaysEnableLegend )
+                cfg.legend.enabled = true;
+
             cfg.xAxis.title.text = xAttr.text;
             cfg.yAxis.title.text = yAttr.text;
             cfg.title.text = xAttr.text + " vs. " + yAttr.text;
