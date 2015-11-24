@@ -59,6 +59,10 @@
                      */
                     removeSeriesCallback: "&?",
                     /**
+                     * Called if a point is removed via the flexible remove button (in chart area)
+                     */
+                    pointRemovalCallback: "&?",
+                    /**
                      * An object so outside resources can communicate with the chart if they wish
                      */
                     apiHandle: '=',

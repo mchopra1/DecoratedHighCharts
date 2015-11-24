@@ -113,6 +113,10 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
         return true;
     };
 
+    $scope.pointRemovalCallback = function(point){
+        console.log(point);
+    };
+
     $scope.getSelectedRowsData = function(){
         return _.filter($scope.data, function(datum){
             return ["00206RCD2","B0A01QJZ2"].indexOf(datum.cusip) > -1;

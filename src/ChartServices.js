@@ -262,7 +262,8 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
             serObj.color = seriesColor;
             serObj.marker.states.select.lineColor = seriesColor;
 
-            series.push(serObj);
+            if (serObj.data.length > 0)
+                series.push(serObj);
         });
         return series;
     }
@@ -499,8 +500,14 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                                             //if (!scope.resetButton.active)
                                             //    scope.resetButton.active = true;
                                             const series = point.series;
+                                            chartScope.pointRemovalCallback({point: point});
                                             point.remove();
-                                            obj.redrawRegression(series, chartProperties);
+                                            const isAPointInAdHocSeries = _.reduce(chartScope.states.adHocSeriesOptions, function(memo,ser){
+                                                return memo || ser.id === series.options.id
+                                            },false);
+                                            if( !isAPointInAdHocSeries )
+                                                obj.redrawRegression(series, chartProperties);
+
                                         }
                                         chartScope.$flexibleRemoveBtn.detach();
                                     });
