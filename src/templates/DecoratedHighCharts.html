@@ -110,10 +110,10 @@
                                 </button>
                                 <ul class="dropdown-menu" role="menu" aria-labelledby="split-button">
                                     <li role="menuitem" ng-repeat="type in chartFactory.regressionTypes"
-                                        ng-click="chartProperties.regression = type.tag;apiHandle.api.loadChart()">
+                                        ng-click="apiHandle.api.changeRegressionType(type.tag)">
                                         <a href="#">{{type.text}}</a>
                                     </li>
-                                    <li role="menuitem" ng-click="chartProperties.regression = undefined;apiHandle.api.loadChart()">
+                                    <li role="menuitem" ng-click="apiHandle.api.changeRegressionType()">
                                         <a href="#">None</a>
                                     </li>
                                 </ul>

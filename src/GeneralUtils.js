@@ -55,18 +55,19 @@
      * @param scope
      */
     root.dhc.attachLegendEventHandlers = function (series, scope) {
-        $(series.legendItem.element)
-            .css({"user-select": "none"})
-            .mousedown(function (event) {
-                if (event.button == 2) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    return dhc.triggerSeriesContextMenu(event, {
-                        series: series,
-                        scope: scope
-                    });
-                }
-            })
+        if( series.legendItem && series.legendItem.element)
+            $(series.legendItem.element)
+                .css({"user-select": "none"})
+                .mousedown(function (event) {
+                    if (event.button == 2) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        return dhc.triggerSeriesContextMenu(event, {
+                            series: series,
+                            scope: scope
+                        });
+                    }
+                })
     };
 
     /**

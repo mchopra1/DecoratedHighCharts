@@ -17,9 +17,9 @@ angular.module('decorated-high-charts').factory('chartFactory', function (boxPlo
         getSpecificChartService: function(chartType){
             return chartFactoryMap[chartType];
         },
-        getHighchartOptions: function (chartScope, excludedPoints) {
+        getHighchartOptions: function (chartScope) {
             return chartFactoryMap[chartScope.chartProperties.type].produceChartOption(chartScope.chartProperties, chartScope,
-                                                                chartScope.chartProperties.dataToShow !== "all", excludedPoints);
+                                                                chartScope.chartProperties.dataToShow !== "all");
         },
         getRelevantProperties: function(chartProperties){
             if( chartProperties.type === "Pie Chart" || chartProperties.type === "Box Plot" )
@@ -201,14 +201,14 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
      * @param stdevForOutlierRemoval the number of stdev beyond which outliers should be excluded (could be null to not remove anything)
      * @returns {Array}
      */
-    function generateSeries(categories, radius, groupedData, xAttr, yAttr, stdevForOutlierRemoval, excludedPoints, chartScope, propertiesHash) {
+    function generateSeries(categories, radius, groupedData, xAttr, yAttr, stdevForOutlierRemoval, chartScope, propertiesHash) {
         var series = [];
         _.each(categories, function (category) {
             var data = [];
             // pick out x, y or Radius
             if (radius != null) {
                 _.each(groupedData[category], function (item) {
-                    if (item[xAttr.colTag] != null && item[yAttr.colTag] && excludedPoints.indexOf(item[chartScope.key]) == -1)
+                    if (item[xAttr.colTag] != null && item[yAttr.colTag] && chartScope.apiHandle.api.excludedPoints.indexOf(item[chartScope.key]) == -1)
                         data.push({
                             id: item[chartScope.key],
                             name: item[chartScope.key],
@@ -219,7 +219,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 });
             } else {
                 _.each(groupedData[category], function (item) {
-                    if (item[xAttr.colTag] != null && item[yAttr.colTag] && excludedPoints.indexOf(item[chartScope.key]) == -1)
+                    if (item[xAttr.colTag] != null && item[yAttr.colTag] && chartScope.apiHandle.api.excludedPoints.indexOf(item[chartScope.key]) == -1)
                         data.push({
                             id: item[chartScope.key],
                             name: item[chartScope.key],
@@ -409,7 +409,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                 }
             }
         },
-        produceChartOption: function (chartProperties, chartScope, onlyOnSelectedRows, excludedPoints) {
+        produceChartOption: function (chartProperties, chartScope, onlyOnSelectedRows) {
             var cfgTemplate = _.extend(_.clone(commonHighchartConfig(chartScope)), {
                 chart: {
                     type: 'scatter',
@@ -444,7 +444,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
 
                 var categories = _.keys(groupedData);
 
-                series = generateSeries.call(this, categories, radius, groupedData, xAttr, yAttr, chartProperties.outlier_remove, excludedPoints, chartScope, chartProperties.$$hashKey);
+                series = generateSeries.call(this, categories, radius, groupedData, xAttr, yAttr, chartProperties.outlier_remove, chartScope, chartProperties.$$hashKey);
                 // get correct regression color
                 if (chartProperties.regression === "linear")
                     addFittedLine(series, chartProperties.$$hashKey);
@@ -495,8 +495,8 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                                 chartScope.$flexibleRemoveBtn.off('click');
                                 chartScope.$flexibleRemoveBtn.on('click', function () {
                                     $timeout(function(){
-                                        if (point.id && excludedPoints.indexOf(point.id) == -1) {
-                                            excludedPoints.push(point.id);
+                                        if (point.id && chartScope.apiHandle.api.excludedPoints.indexOf(point.id) == -1) {
+                                            chartScope.apiHandle.api.excludedPoints.push(point.id);
                                             //if (!scope.resetButton.active)
                                             //    scope.resetButton.active = true;
                                             const series = point.series;

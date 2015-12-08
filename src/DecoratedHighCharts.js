@@ -63,6 +63,10 @@
                      */
                     pointRemovalCallback: "&?",
                     /**
+                     * Callback for resetting the excluded points.  If true is returned, the chart does not reload
+                     */
+                    resetExcludedPointsCallback: "&?",
+                    /**
                      * An object so outside resources can communicate with the chart if they wish
                      */
                     apiHandle: '=',
@@ -208,9 +212,11 @@
                     };
 
                     scope.removeSeries = function(series){
-                        const id = series.id;
-                        series.remove();
-                        scope.removeSeriesCallback(id);
+                        if( series ) {
+                            const id = series.id || series.options.id;
+                            series.remove();
+                            scope.removeSeriesCallback({series: id});
+                        }
                     };
 
                     scope.apiHandle.api = {
@@ -239,7 +245,7 @@
                             }
                             scope.beforeRender();
                             scope.states.needAttrs = false;
-                            var opts = chartFactory.getHighchartOptions(scope, this.excludedPoints);
+                            var opts = chartFactory.getHighchartOptions(scope);
                             opts.chart.renderTo = scope.chartId;
                             scope.states.chart = new Highcharts.Chart(opts);
                             if( scope.title )
@@ -265,7 +271,8 @@
                         removeAdHocSeries: function(seriesId){
                             var series = scope.states.chart.get(seriesId);
                             const index = _.findIndex(scope.states.adHocSeriesOptions, function(opt){
-                                return series.options.id === opt.id;
+                                if( series )
+                                    return series.options.id === opt.id;
                             });
                             if( index > -1 )
                                 scope.states.adHocSeriesOptions.splice(index,1);
@@ -307,10 +314,8 @@
                         },
                         resetExcludedPoints: function(){
                             this.excludedPoints = [];
-                            this.loadChart();
-                            _.each(scope.states.adHocSeriesOptions, function(ser){
-                                scope.apiHandle.api.addAdHocSeries(ser);
-                            });
+                            if( !scope.resetExcludedPointsCallback() )
+                                this.loadChart();
                         }
                     };
 
