@@ -228,7 +228,7 @@
                                 }).indexOf(undefined) > -1 ) {
                                 scope.states.needAttrs = true;
                                 if( !scope.states.chart ){
-                                    scope.states.chart = new Highcharts.Chart({
+                                    scope.states.chart = createHighchart({
                                         chart: {
                                             renderTo: scope.chartId
                                         },
@@ -247,7 +247,7 @@
                             scope.states.needAttrs = false;
                             var opts = chartFactory.getHighchartOptions(scope);
                             opts.chart.renderTo = scope.chartId;
-                            scope.states.chart = new Highcharts.Chart(opts);
+                            scope.states.chart = createHighchart(opts);
                             if( scope.title )
                                 scope.states.chart.setTitle({text: scope.title});
                             // Select all selected points on chart
@@ -329,6 +329,10 @@
                         return _.map(column.visualizationTypes, function(type){
                             return type.replace("_"," ").toUpperCase();
                         });
+                    }
+
+                    function createHighchart(opts){
+                        return new Highcharts.Chart(opts,function(chart){});
                     }
 
                     /**

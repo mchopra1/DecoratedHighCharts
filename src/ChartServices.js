@@ -480,6 +480,17 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
 
             cfg.plotOptions = {
                 series: {
+                    events: {
+                        // Hide regression line when a series is hidden
+                        legendItemClick: function(){
+                            var thisRe = new RegExp("^" + this.name + " Regression");
+                            _.each(this.chart.series, function(ser){
+                                if( ser.name.match(thisRe) )
+                                    ser.visible ? ser.hide() : ser.show();
+                            });
+                            return true;
+                        }
+                    },
                     point: {
                         events: {
                             click: function(e){
@@ -501,13 +512,15 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                                             //    scope.resetButton.active = true;
                                             const series = point.series;
                                             chartScope.pointRemovalCallback({point: point});
-                                            point.remove();
-                                            const isAPointInAdHocSeries = _.reduce(chartScope.states.adHocSeriesOptions, function(memo,ser){
-                                                return memo || ser.id === series.options.id
-                                            },false);
-                                            if( !isAPointInAdHocSeries )
-                                                obj.redrawRegression(series, chartProperties);
-
+                                            if( point && point.remove )
+                                                point.remove();
+                                            if( series && series.options ) {
+                                                const isAPointInAdHocSeries = _.reduce(chartScope.states.adHocSeriesOptions, function (memo, ser) {
+                                                    return memo || ser.id === series.options.id
+                                                }, false);
+                                                if (!isAPointInAdHocSeries)
+                                                    obj.redrawRegression(series, chartProperties);
+                                            }
                                         }
                                         chartScope.$flexibleRemoveBtn.detach();
                                     });

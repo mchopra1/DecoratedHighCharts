@@ -91,6 +91,11 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
                 "COLUMN_CHART"
             ]
         }];
+    }).finally(function(){
+        $http.get("mock_data.json").then(function(data){
+            $scope.data = data.data;
+            $scope.states.ready = true;
+        });
     });
 
     //$scope.customButtons = [{
@@ -147,9 +152,4 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
     };
 
     $scope.apiHandle = {};
-
-    $http.get("mock_data.json").then(function(data){
-        $scope.data = data.data;
-        $scope.states.ready = true;
-    });
 });

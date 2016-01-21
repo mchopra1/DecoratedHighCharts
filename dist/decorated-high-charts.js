@@ -228,7 +228,7 @@
                                 }).indexOf(undefined) > -1 ) {
                                 scope.states.needAttrs = true;
                                 if( !scope.states.chart ){
-                                    scope.states.chart = new Highcharts.Chart({
+                                    scope.states.chart = createHighchart({
                                         chart: {
                                             renderTo: scope.chartId
                                         },
@@ -247,7 +247,7 @@
                             scope.states.needAttrs = false;
                             var opts = chartFactory.getHighchartOptions(scope);
                             opts.chart.renderTo = scope.chartId;
-                            scope.states.chart = new Highcharts.Chart(opts);
+                            scope.states.chart = createHighchart(opts);
                             if( scope.title )
                                 scope.states.chart.setTitle({text: scope.title});
                             // Select all selected points on chart
@@ -329,6 +329,10 @@
                         return _.map(column.visualizationTypes, function(type){
                             return type.replace("_"," ").toUpperCase();
                         });
+                    }
+
+                    function createHighchart(opts){
+                        return new Highcharts.Chart(opts,function(chart){});
                     }
 
                     /**
@@ -868,6 +872,17 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
 
             cfg.plotOptions = {
                 series: {
+                    events: {
+                        // Hide regression line when a series is hidden
+                        legendItemClick: function(){
+                            var thisRe = new RegExp("^" + this.name + " Regression");
+                            _.each(this.chart.series, function(ser){
+                                if( ser.name.match(thisRe) )
+                                    ser.visible ? ser.hide() : ser.show();
+                            });
+                            return true;
+                        }
+                    },
                     point: {
                         events: {
                             click: function(e){
@@ -889,13 +904,15 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                                             //    scope.resetButton.active = true;
                                             const series = point.series;
                                             chartScope.pointRemovalCallback({point: point});
-                                            point.remove();
-                                            const isAPointInAdHocSeries = _.reduce(chartScope.states.adHocSeriesOptions, function(memo,ser){
-                                                return memo || ser.id === series.options.id
-                                            },false);
-                                            if( !isAPointInAdHocSeries )
-                                                obj.redrawRegression(series, chartProperties);
-
+                                            if( point && point.remove )
+                                                point.remove();
+                                            if( series && series.options ) {
+                                                const isAPointInAdHocSeries = _.reduce(chartScope.states.adHocSeriesOptions, function (memo, ser) {
+                                                    return memo || ser.id === series.options.id
+                                                }, false);
+                                                if (!isAPointInAdHocSeries)
+                                                    obj.redrawRegression(series, chartProperties);
+                                            }
                                         }
                                         chartScope.$flexibleRemoveBtn.detach();
                                     });
