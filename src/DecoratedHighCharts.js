@@ -292,6 +292,9 @@
                                 scope.apiHandle.api.loadChart();
                             });
                         },
+                        changeChartTitle: function(title){
+                            scope.states.chart.setTitle({text: title});
+                        },
                         changeAxisTitle: function(axis, title){
                             if( axis == 'x')
                                 scope.states.chart.xAxis[0].setTitle({text: title});
