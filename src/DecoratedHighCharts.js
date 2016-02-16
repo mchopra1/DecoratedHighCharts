@@ -85,7 +85,7 @@
                     /**
                      * Optional non-binding title for the chart
                      */
-                    title: "@?",
+                    chartTitle: "@?",
                     /**
                      * Additional HighCharts options to layer on defaults
                      */
@@ -248,8 +248,8 @@
                             var opts = chartFactory.getHighchartOptions(scope);
                             opts.chart.renderTo = scope.chartId;
                             scope.states.chart = createHighchart(opts);
-                            if( scope.title )
-                                scope.states.chart.setTitle({text: scope.title});
+                            if( scope.chartTitle )
+                                scope.states.chart.setTitle({text: scope.chartTitle});
                             // Select all selected points on chart
                             _.each(scope.getSelectedRowsData(), function(datum){
                                 scope.apiHandle.api.togglePoint(datum[scope.key], true);

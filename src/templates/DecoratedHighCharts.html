@@ -1,4 +1,4 @@
-<div class="root" style="position: relative">
+<div class="root" style="position: relative;height:100%">
     <div class="control flex-main-container">
         <span class="flex-sub-container-left">
             <span ng-hide="chartOptions.disablePropertyChooser">
@@ -192,10 +192,10 @@
         </span>
     </div>
     <hr ng-hide="allPanelHidden()"/>
-    <div style="position:relative">
+    <div style="position:relative;height:100%">
         <i ng-show="isProcessing" class="fa fa-spinner fa-spin fa-3x spinner" style="position:absolute;top:0;left:0"></i>
         <!-- this is where the stock chart goes -->
-        <div style="position:relative;">
+        <div style="position:relative;height:100%">
             <alert ng-show="states.needAttrs" close="states.needAttrs = false" type="warning" style="font-size: 12px;position: absolute;z-index:999">
                 Please enter required attributes
             </alert>

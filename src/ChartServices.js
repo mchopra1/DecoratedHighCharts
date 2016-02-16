@@ -566,55 +566,56 @@ angular.module('decorated-high-charts').factory('commonHighchartConfig', functio
         }
     });
     function getCommonCfg(chartScope) {
-        return {
-            chart: {
-                animation: false,
-                marginTop: -12
-            },
-            title: {
-                text: "",
-                events: {
-                    click: function (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        dhc.onTitleClick(e, chartScope, this);
-                    }
-                }
-            },
-            plotOptions: {
-                series: {turboThreshold: TURBO_THRESHOLD}
-            },
-            exporting: {
-                enabled: false
-            },
-            tooltip: {
-                valueDecimals: 2,
-                useHTML: true,
-                delayForDisplay: 1000
-            },
-            credits: {
-                enabled: false
-            },
-            xAxis: {
+        return _.extend({
+                chart: {
+                    animation: false,
+                    marginTop: -12
+                },
                 title: {
+                    text: "",
                     events: {
-                        click: function (event) {
-                            dhc.onAxisClick.call(this, event, chartScope);
+                        click: function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            dhc.onTitleClick(e, chartScope, this);
+                        }
+                    }
+                },
+                plotOptions: {
+                    series: {turboThreshold: TURBO_THRESHOLD}
+                },
+                exporting: {
+                    enabled: false
+                },
+                tooltip: {
+                    valueDecimals: 2,
+                    useHTML: true,
+                    delayForDisplay: 1000
+                },
+                credits: {
+                    enabled: false
+                },
+                xAxis: {
+                    title: {
+                        events: {
+                            click: function (event) {
+                                dhc.onAxisClick.call(this, event, chartScope);
+                            }
+                        }
+                    }
+                },
+                yAxis: {
+                    title: {
+                        events: {
+                            click: function (event) {
+                                dhc.onAxisClick.call(this, event, chartScope);
+                            }
                         }
                     }
                 }
-            },
-            yAxis: {
-                title: {
-                    events: {
-                        click: function (event) {
-                            dhc.onAxisClick.call(this, event, chartScope);
-                        }
-                    }
-                }
-            }
-        }
-    };
+            }, chartScope.chartOptions.highchartsOverlay ? chartScope.chartOptions.highchartsOverlay : {}
+        );
+    }
     return function(chartScope) {
         return _.clone(getCommonCfg(chartScope));
     };
