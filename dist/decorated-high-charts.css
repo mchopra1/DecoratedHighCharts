@@ -14,6 +14,7 @@
     display: -webkit-flex;
     flex-flow: row nowrap;
     justify-content: flex-start;
+    padding-left: 12px;
 }
 
 .flex-sub-container-right {
@@ -39,9 +40,9 @@
 
 .chart-area-container{
     position:relative;
-    height: -moz-calc(100% - 90px);
-    height: -webkit-calc(100% - 90px);
-    height: calc(100% - 90px);
+    height: -moz-calc(100% - 92px);
+    height: -webkit-calc(100% - 92px);
+    height: calc(100% - 92px);
 }
 
 .floating-form {
