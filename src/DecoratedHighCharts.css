@@ -37,6 +37,13 @@
     padding-right: .5em;
 }
 
+.chart-area-container{
+    position:relative;
+    height: -moz-calc(100% - 90px);
+    height: -webkit-calc(100% - 90px);
+    height: calc(100% - 90px);
+}
+
 .floating-form {
     position: absolute;
     z-index: 1;
