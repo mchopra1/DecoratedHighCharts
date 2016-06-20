@@ -320,6 +320,10 @@
                             if( !scope.resetExcludedPointsCallback() )
                                 this.loadChart();
                         },
+                        changeRegressionType : function(tag){
+                            scope.chartProperties.regression = tag;
+                            this.loadChart();
+                        },
                         /**
                          * Sets size to be exactly the dimensions of the container
                          */
