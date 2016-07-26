@@ -322,9 +322,6 @@
                         },
                         changeRegressionType : function(tag){
                             scope.chartProperties.regression = tag;
-                            if(scope.chartProperties.regression === 'exponential'){
-                                scope.chartProperties.outlier_remove = true;
-                            }
                             this.loadChart();
                         },
                         /**
