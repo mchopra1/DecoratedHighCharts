@@ -23,9 +23,9 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
 
     $scope.chartOptions = {
         disableExporting: true,
-        disableChartType: true,
-        disableMoreOptions: true,
-        disableFirstProperty: true,
+        disableChartType: false,
+        disableMoreOptions: false,
+        disableFirstProperty: false,
         alwaysEnableLegend: true
     };
 
