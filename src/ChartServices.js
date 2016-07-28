@@ -791,9 +791,13 @@ angular.module('decorated-high-charts').factory('dhcStatisticalService', functio
                 return [datum.x, datum.y]
             });
             if (dataArray.length != 0) {
-                const scrubbedData = _.filter(dataArray, function (row) {
+                var scrubbedData = _.filter(dataArray, function (row) {
                     return row[0] && row[0];
                 });
+                if(type === 'exponential'){
+                    var nonNegativeData = _.filter(scrubbedData, function(data){return data[1] > 0}); //Filters out the data points which include negative OAS.
+                    scrubbedData = nonNegativeData;
+                }
                 var regressionOutput = regression(type, scrubbedData, extraArg);
                 var predictedValue = regressionOutput.points;
                 predictedValue.sort(function (a, b) {
