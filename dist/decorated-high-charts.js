@@ -1414,7 +1414,7 @@ function aggregate(dataToAgg, y) {
                 }
             },
             axisType: axisType,
-            opposite: chart.axes.length % 2 == 0,
+            opposite: chart.options.yAxis.length % 2 == 0,
             id: axisId
         });
         return chart.get(axisId);
