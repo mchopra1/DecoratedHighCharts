@@ -27,6 +27,7 @@
     "typeahead-focus": "https://github.com/caguthrie/typeaheadFocus.git",
     "numeral": "~1.5.3",
     "regression-js": "~1.2.0",
-    "simple-statistics": "~0.9.2"
+    "simple-statistics": "~0.9.2",
+    "file-saver": "https://github.com/eligrey/FileSaver.js.git"
   }
 }
