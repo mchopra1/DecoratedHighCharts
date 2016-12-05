@@ -234,7 +234,8 @@
                                             renderTo: scope.chartId
                                         },
                                         exporting: {
-                                            enabled: false
+                                            enabled: false,
+                                            url: 'https://export.highcharts.com/'
                                         },
                                         title: {
                                             text: ""
