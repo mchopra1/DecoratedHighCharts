@@ -480,6 +480,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
 
             cfg.plotOptions = {
                 series: {
+                    stickyTracking: false,
                     events: {
                         // Hide regression line when a series is hidden
                         legendItemClick: function(){
