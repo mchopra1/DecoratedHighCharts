@@ -133,9 +133,9 @@
                         e = chart.pointer.normalize(e);
                         scope.states.xVal = chart.xAxis[0].toValue(e.chartX);
                         scope.states.yVal = chart.yAxis[0].toValue(e.chartY);
-                        // console.log(scope.states.xVal+', '+scope.states.yVal);
-                        // console.log('wal: '+ chart.xAxis[0].toValue(e.chartX));
-                        // console.log('oas: '+ chart.yAxis[0].toValue(e.chartY));
+                        document.getElementById("coordinatesPlace").innerHTML =
+                            '<b>'+chart.xAxis[0].userOptions.title.text +': </b>'+ chart.xAxis[0].toValue(e.chartX).toFixed(2)+'<br/><b>'+
+                            chart.yAxis[0].userOptions.title.text+': </b>'+chart.yAxis[0].toValue(e.chartY).toFixed(2);
                     });
 
                     /**
