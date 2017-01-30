@@ -217,10 +217,23 @@
                     };
 
                     scope.exportPDF = function(){
-                        scope.states.chart.exportChart({
+                        var svg = scope.states.chart.getSVGForExport({
                             type: 'application/pdf',
                             filename: 'chart-export ' + scope.states.chart.title.textStr
                         });
+                        var canvas = document.createElement('canvas');
+                        canvg(canvas, svg);
+                        var imgData = canvas.toDataURL('image/jpeg');
+                        var doc = new jsPDF('l', 'pt', 'letter');
+                        var width = doc.internal.pageSize.width;
+                        var height = doc.internal.pageSize.height;
+                        doc.addImage(imgData,'JPEG',0,0,width,height);
+                        doc.output('save','chart-export ' + scope.states.chart.title.textStr);
+
+                        // scope.states.chart.exportChart({
+                        //     type: 'application/pdf',
+                        //     filename: 'chart-export ' + scope.states.chart.title.textStr
+                        // });
                     };
 
                     scope.removeSeries = function(series){
