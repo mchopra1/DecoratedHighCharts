@@ -654,7 +654,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                     if (item[xAttr.colTag] != null && item[yAttr.colTag] && chartScope.apiHandle.api.excludedPoints.indexOf(item[chartScope.key]) == -1)
                         data.push({
                             id: item[chartScope.key],
-                            name: item[chartScope.key] +" "+ (item.maturity &&  (typeof(item.maturity.split) == 'function') ? moment(item.maturity.split("/")[0],"MM").format("MMM")+"-"+moment(item.maturity.split("/")[2],"YYYY").format("YYYY") : null),
+                            name: (item.bloomberg_ticker && chartScope.chartProperties.type == 'Scattered Plot'? item.bloomberg_ticker : item[chartScope.key]) +" "+ (item.maturity &&  (typeof(item.maturity.split) == 'function') ? moment(item.maturity.split("/")[0],"MM").format("MMM")+"-"+moment(item.maturity.split("/")[2],"YYYY").format("YYYY") : ''),
                             x: item[xAttr.colTag],
                             y: item[yAttr.colTag]
                         });
