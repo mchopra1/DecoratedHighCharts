@@ -133,9 +133,14 @@
                         e = chart.pointer.normalize(e);
                         scope.states.xVal = chart.xAxis[0].toValue(e.chartX);
                         scope.states.yVal = chart.yAxis[0].toValue(e.chartY);
-                        document.getElementById("coordinatesPlace").innerHTML =
-                            '<b>'+chart.xAxis[0].userOptions.title.text +': </b>'+ chart.xAxis[0].toValue(e.chartX).toFixed(2)+'<br/><b>'+
-                            chart.yAxis[0].userOptions.title.text+': </b>'+chart.yAxis[0].toValue(e.chartY).toFixed(2);
+                        if(!_.isNaN(scope.states.xVal) && !_.isNaN(scope.states.yVal)){
+                            document.getElementById("coordinatesPlace").innerHTML =
+                                '<b>'+chart.xAxis[0].userOptions.title.text +': </b>'+ chart.xAxis[0].toValue(e.chartX).toFixed(2)+'<br/><b>'+
+                                chart.yAxis[0].userOptions.title.text+': </b>'+chart.yAxis[0].toValue(e.chartY).toFixed(2);
+                        }
+                        else{
+                            document.getElementById("coordinatesPlace").innerHTML = '';
+                        }
                     });
 
                     /**
