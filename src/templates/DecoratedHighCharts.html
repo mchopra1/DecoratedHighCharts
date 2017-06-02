@@ -2,7 +2,7 @@
     <div class="control flex-main-container">
         <span class="flex-sub-container-left">
             <span ng-hide="chartOptions.disablePropertyChooser">
-                <span ng-if="chartProperties.type == 'Scattered Plot'">
+                <span ng-if="chartProperties.type == 'Scatter Plot'">
                     <div class="restrict-dropdown-menu" ng-hide="chartOptions.disableFirstProperty">
                         <label>X:</label>
                         <input type="text" ng-model="chartProperties.x_attribute" class="form-control"
@@ -77,7 +77,7 @@
                     <i class="fa" ng-class="{'fa-chevron-up': states.menuDisplays.moreOptions, 'fa-chevron-down': !states.menuDisplays.moreOptions}"></i>
                 </a>
                 <div class="more-options floating-form" style="display: none;width:250px;">
-                    <div ng-if="chartProperties.type == 'Scattered Plot'">
+                    <div ng-if="chartProperties.type == 'Scatter Plot'">
                         <label style="padding-right: 10px;">Group By:</label>
                         <div class="restrict-dropdown-menu input-group">
                             <input type="text" class="form-control"
@@ -149,7 +149,7 @@
                             </span>
                         </div>
                     </div>
-                    <div ng-if="chartProperties.type != 'Column Chart' && chartProperties.type != 'Scattered Plot'">
+                    <div ng-if="chartProperties.type != 'Column Chart' && chartProperties.type != 'Scatter Plot'">
                         There are no other options for this type of chart
                     </div>
                 </div>
@@ -170,7 +170,7 @@
                         <label class="btn btn-primary" ng-model="chartProperties.type" btn-radio="'Pie Chart'" ng-click="changeChartType()">Pie Chart</label>
                         <label class="btn btn-primary" ng-model="chartProperties.type" btn-radio="'Box Plot'" ng-click="changeChartType()">Box Plot</label>
                         <label class="btn btn-primary" ng-model="chartProperties.type" btn-radio="'Column Chart'" ng-click="changeChartType()">Column Chart</label>
-                        <label class="btn btn-primary" ng-model="chartProperties.type" btn-radio="'Scattered Plot'" ng-click="changeChartType()">Scattered Plot</label>
+                        <label class="btn btn-primary" ng-model="chartProperties.type" btn-radio="'Scatter Plot'" ng-click="changeChartType()">Scatter Plot</label>
                     </div>
                     <br/>
                     <br/>

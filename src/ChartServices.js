@@ -9,7 +9,7 @@ var TURBO_THRESHOLD = 2000;
 angular.module('decorated-high-charts').factory('chartFactory', function (boxPlotProvider, scatteredChartProvider, pieChartProvider, columnChartProvider) {
     var chartFactoryMap = {
         "Box Plot": boxPlotProvider,
-        "Scattered Plot": scatteredChartProvider,
+        "Scatter Plot": scatteredChartProvider,
         "Pie Chart": pieChartProvider,
         "Column Chart": columnChartProvider
     };
@@ -24,7 +24,7 @@ angular.module('decorated-high-charts').factory('chartFactory', function (boxPlo
         getRelevantProperties: function(chartProperties){
             if( chartProperties.type === "Pie Chart" || chartProperties.type === "Box Plot" )
                 return ["group_by", "analytic"];
-            else if( chartProperties.type === "Scattered Plot" )
+            else if( chartProperties.type === "Scatter Plot" )
                 return ["x_attribute", "y_attribute", "radius", "group_by"];
             else if( chartProperties.type === "Column Chart" )
                 return ["x_attribute", "y_attribute", "group_by"];
@@ -32,7 +32,7 @@ angular.module('decorated-high-charts').factory('chartFactory', function (boxPlo
         getRequiredProperties: function(chartProperties){
             if( chartProperties.type === "Pie Chart" || chartProperties.type === "Box Plot" )
                 return ["group_by", "analytic"];
-            else if( chartProperties.type === "Scattered Plot" || chartProperties.type === "Column Chart" )
+            else if( chartProperties.type === "Scatter Plot" || chartProperties.type === "Column Chart" )
                 return ["x_attribute", "y_attribute"];
         },
         regressionTypes:  [
@@ -222,7 +222,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                     if (item[xAttr.colTag] != null && item[yAttr.colTag] && chartScope.apiHandle.api.excludedPoints.indexOf(item[chartScope.key]) == -1)
                         data.push({
                             id: item[chartScope.key],
-                            name: (item.bloomberg_ticker && chartScope.chartProperties.type == 'Scattered Plot'? item.bloomberg_ticker : item[chartScope.key]) +(item.coupon ? " "+item.coupon.toPrecision(4) : "") +" "+ (item.maturity &&  (typeof(item.maturity.split) == 'function') ? moment(item.maturity.split("/")[0],"MM").format("MMM")+"-"+moment(item.maturity.split("/")[2],"YYYY").format("YYYY") : ''),
+                            name: (item.bloomberg_ticker && chartScope.chartProperties.type == 'Scatter Plot'? item.bloomberg_ticker : item[chartScope.key]) +(item.coupon ? " "+item.coupon.toPrecision(4) : "") +" "+ (item.maturity &&  (typeof(item.maturity.split) == 'function') ? moment(item.maturity.split("/")[0],"MM").format("MMM")+"-"+moment(item.maturity.split("/")[2],"YYYY").format("YYYY") : ''),
                             x: item[xAttr.colTag],
                             y: item[yAttr.colTag]
                         });

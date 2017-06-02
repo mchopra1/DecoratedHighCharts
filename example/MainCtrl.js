@@ -10,7 +10,7 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
     $scope.chartProperties = {
         regression: "logarithmic",
         regression_degree: 3,
-        type: "Scattered Plot",
+        type: "Scatter Plot",
         x_attribute: {
             colTag: "wal_to_worst",
             text: "WAL"
@@ -39,7 +39,7 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
             "aggregationMethod": "AVERAGE",
             "visualizationTypes": [
                 "BOX_PLOT",
-                "SCATTERED_PLOT",
+                "SCATTER_PLOT",
                 "COLUMN_CHART"
             ]
         },{
@@ -48,7 +48,7 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
             "aggregationMethod": "AVERAGE",
             "visualizationTypes": [
                 "BOX_PLOT",
-                "SCATTERED_PLOT",
+                "SCATTER_PLOT",
                 "COLUMN_CHART"
             ]
         },{
@@ -57,7 +57,7 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
             "aggregationMethod": "AVERAGE",
             "visualizationTypes": [
                 "BOX_PLOT",
-                "SCATTERED_PLOT",
+                "SCATTER_PLOT",
                 "COLUMN_CHART"
             ]
         },{
@@ -67,7 +67,7 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
             "visualizationTypes": [
                 "PIE_CHART",
                 "BOX_PLOT",
-                "SCATTERED_PLOT",
+                "SCATTER_PLOT",
                 "COLUMN_CHART"
             ]
         }];
@@ -77,7 +77,7 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
             text: "Issuer Name",
             "visualizationTypes": [
                 "BOX_PLOT",
-                "SCATTERED_PLOT",
+                "SCATTER_PLOT",
                 "PIE_CHART",
                 "COLUMN_CHART"
             ]
@@ -86,7 +86,7 @@ angular.module('Example', ['decorated-high-charts']).controller("MainCtrl", func
             text: "Barclays Sub-Industry",
             "visualizationTypes": [
                 "BOX_PLOT",
-                "SCATTERED_PLOT",
+                "SCATTER_PLOT",
                 "PIE_CHART",
                 "COLUMN_CHART"
             ]
