@@ -233,7 +233,7 @@
                         var width = doc.internal.pageSize.width;
                         var height = doc.internal.pageSize.height;
                         doc.addImage(imgData,'JPEG',0,0,width,height);
-                        doc.output('save','chart-export ' + scope.states.chart.title.textStr);
+                        doc.output('save','chart-export ' + scope.states.chart.title.textStr.replace(/[.]/g,""));
 
                         // scope.states.chart.exportChart({
                         //     type: 'application/pdf',
