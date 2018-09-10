@@ -500,7 +500,7 @@ angular.module('decorated-high-charts').factory('scatteredChartProvider', functi
                                     chartScope.apiHandle.api.togglePoint(this.id);
                                 }
                             },
-                            mouseOver: function(){
+                            mousemove: function(){
                                 const point = this;
 
                                 chartScope.$flexibleRemoveBtn.detach();
